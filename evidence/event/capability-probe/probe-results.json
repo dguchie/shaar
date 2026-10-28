@@ -1,0 +1,712 @@
+{
+  "attempts": [
+    {
+      "attempt_id": "A01",
+      "elapsed_min": 0.9,
+      "kind": "primary",
+      "model_role": "spark",
+      "outcome": "BLOCKED",
+      "outcome_basis": "preflight: docs D1: title missing; docs D1: url missing; docs D1: retrieved date missing (YYYY-MM-DD); api.route_doc must name a docs id that confirms the route; budget.remaining_usd_billing_console missing (billing-console observation); id_doc must name a docs id that confirms the model ID; input_usd_per_mtok missing; output_usd_per_mtok missing; pricing_doc must name a docs id; reasoning must be none, billed_as_output or not_billed (otherwise cost cannot be bounded)",
+      "probe": "spark_role",
+      "retry_reason": null,
+      "sanitized": false,
+      "sent": false
+    },
+    {
+      "attempt_id": "A02",
+      "elapsed_min": 1.2,
+      "kind": "primary",
+      "model_role": "wonder",
+      "outcome": "BLOCKED",
+      "outcome_basis": "preflight: docs D1: title missing; docs D1: url missing; docs D1: retrieved date missing (YYYY-MM-DD); api.route_doc must name a docs id that confirms the route; budget.remaining_usd_billing_console missing (billing-console observation); id_doc must name a docs id that confirms the model ID; input_usd_per_mtok missing; output_usd_per_mtok missing; pricing_doc must name a docs id; reasoning must be none, billed_as_output or not_billed (otherwise cost cannot be bounded)",
+      "probe": "wonder_role",
+      "retry_reason": null,
+      "sanitized": false,
+      "sent": false
+    },
+    {
+      "attempt_id": "A03",
+      "elapsed_min": 1.7,
+      "kind": "primary",
+      "model_role": "spark",
+      "outcome": "BLOCKED",
+      "outcome_basis": "preflight: docs D1: title missing; docs D1: url missing; docs D1: retrieved date missing (YYYY-MM-DD); api.route_doc must name a docs id that confirms the route; budget.remaining_usd_billing_console missing (billing-console observation); id_doc must name a docs id that confirms the model ID; input_usd_per_mtok missing; output_usd_per_mtok missing; pricing_doc must name a docs id; reasoning must be none, billed_as_output or not_billed (otherwise cost cannot be bounded)",
+      "probe": "spark_structured",
+      "retry_reason": null,
+      "sanitized": false,
+      "sent": false
+    },
+    {
+      "attempt_id": "A04",
+      "cost_bound": {
+        "in_tok_bound": 1255,
+        "out_tok_bound": 4096,
+        "usd": 0.018977
+      },
+      "dropped_fields": {
+        "message_fields": [],
+        "top_level_fields": [
+          "created"
+        ]
+      },
+      "elapsed_min": 19.9,
+      "http_status": 200,
+      "kind": "primary",
+      "latency_ms": 3427,
+      "model_role": "spark",
+      "outcome": "PASS",
+      "outcome_basis": "HTTP 200; message_content passed local schema validation",
+      "probe": "spark_role",
+      "reasoning_units_reported": 724,
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": "You extract constraints from source text. Reply with one JSON object only: no prose and no code fences.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC SOURCE: written for this probe; not taken from any real project]\nS1: A patch may change only files listed in the request manifest.\nS2: An accepted patch must leave every existing test passing.\nS3: A patch that changes more than 200 lines is rejected without review.\n\nReturn JSON of the form {\"constraints\": [{\"id\": \"C1\", \"statement\": \"...\", \"sources\": [\"S1\"]}]}. Give one constraint per rule. Each constraint cites the source line IDs (S1, S2, S3) it comes from. Use no other keys.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-spark-1.3"
+        },
+        "body_bytes": 743,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "response": {
+        "choices_returned": 1,
+        "content": "{\"constraints\": [{\"id\": \"C1\", \"statement\": \"A patch may change only files listed in the request manifest.\", \"sources\": [\"S1\"]}, {\"id\": \"C2\", \"statement\": \"An accepted patch must leave every existing test passing.\", \"sources\": [\"S2\"]}, {\"id\": \"C3\", \"statement\": \"A patch that changes more than 200 lines is rejected without review.\", \"sources\": [\"S3\"]}]}",
+        "finish_reason": "stop",
+        "id": "chatcmpl-[redacted-uuid]",
+        "model": "muse-spark-1.3",
+        "refusal": null,
+        "tool_calls": [],
+        "usage": {
+          "completion_tokens": 829,
+          "completion_tokens_details": {
+            "reasoning_tokens": 724
+          },
+          "prompt_tokens": 157,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 986
+        }
+      },
+      "retry_reason": null,
+      "sanitized": true,
+      "sent": true,
+      "timeout": false,
+      "usage_estimate_usd": 0.003719,
+      "validation": {
+        "checked": "message_content",
+        "errors": [],
+        "fence_stripped": false,
+        "ok": true,
+        "semantic_notes": []
+      }
+    },
+    {
+      "attempt_id": "A05",
+      "cost_bound": {
+        "in_tok_bound": 1202,
+        "out_tok_bound": 8192,
+        "usd": 0.168648
+      },
+      "dropped_fields": {
+        "message_fields": [],
+        "top_level_fields": [
+          "created"
+        ]
+      },
+      "elapsed_min": 20.1,
+      "http_status": 200,
+      "kind": "primary",
+      "latency_ms": 1935,
+      "model_role": "wonder",
+      "outcome": "PASS",
+      "outcome_basis": "HTTP 200; message_content passed local schema validation",
+      "probe": "wonder_role",
+      "reasoning_units_reported": 259,
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": "You propose the smallest repair for a failing test. Reply with one JSON object only: no prose and no code fences.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC FAILURE: written for this probe; not taken from any real project]\nFile calc.py (2 lines):\n1: def add(a, b):\n2:     return a - b\nTest: assert add(2, 3) == 5\nResult: AssertionError (add(2, 3) returned -1)\n\nReturn JSON of the form {\"diagnosis\": \"...\", \"file\": \"calc.py\", \"line\": 2, \"replacement\": \"...\", \"confidence\": \"low|medium|high\"}. The replacement is the full new text of that single line. Use no other keys.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-wonder-1.0"
+        },
+        "body_bytes": 690,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "response": {
+        "choices_returned": 1,
+        "content": "{\"diagnosis\": \"add returns a - b instead of a + b, so add(2, 3) is -1 not 5\", \"file\": \"calc.py\", \"line\": 2, \"replacement\": \"    return a + b\", \"confidence\": \"high\"}",
+        "finish_reason": "stop",
+        "id": "chatcmpl-[redacted-uuid]",
+        "model": "muse-wonder-1.0",
+        "refusal": null,
+        "tool_calls": [],
+        "usage": {
+          "completion_tokens": 329,
+          "completion_tokens_details": {
+            "reasoning_tokens": 259
+          },
+          "prompt_tokens": 165,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 494
+        }
+      },
+      "retry_reason": null,
+      "sanitized": true,
+      "sent": true,
+      "timeout": false,
+      "usage_estimate_usd": 0.00724,
+      "validation": {
+        "checked": "message_content",
+        "errors": [],
+        "fence_stripped": false,
+        "ok": true,
+        "semantic_notes": []
+      }
+    },
+    {
+      "attempt_id": "A06",
+      "cost_bound": {
+        "in_tok_bound": 1096,
+        "out_tok_bound": 4096,
+        "usd": 0.018778
+      },
+      "dropped_fields": {
+        "message_fields": [],
+        "top_level_fields": [
+          "created"
+        ]
+      },
+      "elapsed_min": 20.3,
+      "http_status": 200,
+      "kind": "primary",
+      "latency_ms": 2574,
+      "model_role": "spark",
+      "outcome": "PASS",
+      "outcome_basis": "HTTP 200; message_content passed local schema validation",
+      "probe": "spark_structured",
+      "reasoning_units_reported": 306,
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": "You read gate log lines.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC LOG LINE: written for this probe] gate: reject (2 of 14 tests failed)\n\nReport the gate verdict and a short reason.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-spark-1.3",
+          "response_format": {
+            "json_schema": {
+              "name": "gate_verdict",
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "verdict": {
+                    "enum": [
+                      "accept",
+                      "reject"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "verdict",
+                  "reason"
+                ],
+                "type": "object"
+              },
+              "strict": true
+            },
+            "type": "json_schema"
+          }
+        },
+        "body_bytes": 584,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "response": {
+        "choices_returned": 1,
+        "content": "{\"reason\":\"2 of 14 tests failed\",\"verdict\":\"reject\"}",
+        "finish_reason": "stop",
+        "id": "chatcmpl-[redacted-uuid]",
+        "model": "muse-spark-1.3",
+        "refusal": null,
+        "tool_calls": [],
+        "usage": {
+          "completion_tokens": 330,
+          "completion_tokens_details": {
+            "reasoning_tokens": 306
+          },
+          "prompt_tokens": 106,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 436
+        }
+      },
+      "retry_reason": null,
+      "sanitized": true,
+      "sent": true,
+      "timeout": false,
+      "usage_estimate_usd": 0.001535,
+      "validation": {
+        "checked": "message_content",
+        "errors": [],
+        "fence_stripped": false,
+        "ok": true,
+        "semantic_notes": []
+      }
+    },
+    {
+      "attempt_id": "A07",
+      "cost_bound": {
+        "in_tok_bound": 1227,
+        "out_tok_bound": 4096,
+        "usd": 0.018942
+      },
+      "elapsed_min": 20.3,
+      "error": {
+        "message": "only `\"auto\"` is supported for `tool_choice`. `\"none\"`, `\"required\"`, and named function choices are not currently supported",
+        "param": "tool_choice",
+        "type": "invalid_request_error"
+      },
+      "http_status": 400,
+      "kind": "primary",
+      "latency_ms": 376,
+      "model_role": "spark",
+      "outcome": "UNSUPPORTED",
+      "outcome_basis": "HTTP 400; the error names the tool request parameter",
+      "probe": "spark_tool",
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": "You read gate log lines.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC LOG LINE: written for this probe] gate: reject (2 of 14 tests failed)\n\nCall record_verdict with the gate verdict and a short reason.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-spark-1.3",
+          "tool_choice": {
+            "function": {
+              "name": "record_verdict"
+            },
+            "type": "function"
+          },
+          "tools": [
+            {
+              "function": {
+                "description": "Record the gate verdict for one log line.",
+                "name": "record_verdict",
+                "parameters": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "reason": {
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "enum": [
+                        "accept",
+                        "reject"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "verdict",
+                    "reason"
+                  ],
+                  "type": "object"
+                }
+              },
+              "type": "function"
+            }
+          ]
+        },
+        "body_bytes": 715,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "retry_reason": null,
+      "sanitized": false,
+      "sent": true,
+      "timeout": false
+    },
+    {
+      "attempt_id": "A08",
+      "cost_bound": {
+        "in_tok_bound": 1097,
+        "out_tok_bound": 8192,
+        "usd": 0.168228
+      },
+      "dropped_fields": {
+        "message_fields": [],
+        "top_level_fields": [
+          "created"
+        ]
+      },
+      "elapsed_min": 20.4,
+      "http_status": 200,
+      "kind": "primary",
+      "latency_ms": 4061,
+      "model_role": "wonder",
+      "outcome": "PASS",
+      "outcome_basis": "HTTP 200; message_content passed local schema validation",
+      "probe": "wonder_structured",
+      "reasoning_units_reported": 367,
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": "You read gate log lines.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC LOG LINE: written for this probe] gate: reject (2 of 14 tests failed)\n\nReport the gate verdict and a short reason.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-wonder-1.0",
+          "response_format": {
+            "json_schema": {
+              "name": "gate_verdict",
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "verdict": {
+                    "enum": [
+                      "accept",
+                      "reject"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "verdict",
+                  "reason"
+                ],
+                "type": "object"
+              },
+              "strict": true
+            },
+            "type": "json_schema"
+          }
+        },
+        "body_bytes": 585,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "response": {
+        "choices_returned": 1,
+        "content": "{\n  \"reason\": \"Reject.\",\n  \"verdict\": \"reject\"\n}",
+        "finish_reason": "stop",
+        "id": "chatcmpl-[redacted-uuid]",
+        "model": "muse-wonder-1.0",
+        "refusal": null,
+        "tool_calls": [],
+        "usage": {
+          "completion_tokens": 393,
+          "completion_tokens_details": {
+            "reasoning_tokens": 367
+          },
+          "prompt_tokens": 50,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 443
+        }
+      },
+      "retry_reason": null,
+      "sanitized": true,
+      "sent": true,
+      "timeout": false,
+      "usage_estimate_usd": 0.00806,
+      "validation": {
+        "checked": "message_content",
+        "errors": [],
+        "fence_stripped": false,
+        "ok": true,
+        "semantic_notes": []
+      }
+    },
+    {
+      "attempt_id": "A09",
+      "cost_bound": {
+        "in_tok_bound": 1228,
+        "out_tok_bound": 8192,
+        "usd": 0.168752
+      },
+      "elapsed_min": 20.4,
+      "error": {
+        "message": "only `\"auto\"` is supported for `tool_choice`. `\"none\"`, `\"required\"`, and named function choices are not currently supported",
+        "param": "tool_choice",
+        "type": "invalid_request_error"
+      },
+      "http_status": 400,
+      "kind": "primary",
+      "latency_ms": 258,
+      "model_role": "wonder",
+      "outcome": "UNSUPPORTED",
+      "outcome_basis": "HTTP 400; the error names the tool request parameter",
+      "probe": "wonder_tool",
+      "redirect": false,
+      "request": {
+        "body": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": "You read gate log lines.",
+              "role": "system"
+            },
+            {
+              "content": "[SYNTHETIC LOG LINE: written for this probe] gate: reject (2 of 14 tests failed)\n\nCall record_verdict with the gate verdict and a short reason.",
+              "role": "user"
+            }
+          ],
+          "model": "muse-wonder-1.0",
+          "tool_choice": {
+            "function": {
+              "name": "record_verdict"
+            },
+            "type": "function"
+          },
+          "tools": [
+            {
+              "function": {
+                "description": "Record the gate verdict for one log line.",
+                "name": "record_verdict",
+                "parameters": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "reason": {
+                      "type": "string"
+                    },
+                    "verdict": {
+                      "enum": [
+                        "accept",
+                        "reject"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "verdict",
+                    "reason"
+                  ],
+                  "type": "object"
+                }
+              },
+              "type": "function"
+            }
+          ]
+        },
+        "body_bytes": 716,
+        "endpoint": "https://api.meta.ai/v1/chat/completions"
+      },
+      "retry_reason": null,
+      "sanitized": false,
+      "sent": true,
+      "timeout": false
+    }
+  ],
+  "config_snapshot": {
+    "api": {
+      "base_url": "https://api.meta.ai/v1",
+      "chat_path": "/chat/completions",
+      "max_out_param": "max_tokens",
+      "route_doc": "D3",
+      "wire_format": "openai_chat_completions"
+    },
+    "budget": {
+      "credit_usd_billing_console": 150,
+      "final_reserve_usd": 30,
+      "observed_charges_usd": null,
+      "remaining_usd_billing_console": 150,
+      "spike_cap_usd": 10
+    },
+    "docs": [
+      {
+        "id": "D1",
+        "retrieved": "2026-10-28",
+        "title": "Pricing and rate limits - Meta Model API",
+        "url": "https://dev.meta.ai/docs/pricing-rate-limits"
+      },
+      {
+        "id": "D2",
+        "retrieved": "2026-10-28",
+        "title": "Models - Meta Model API",
+        "url": "https://dev.meta.ai/docs/models"
+      },
+      {
+        "id": "D3",
+        "retrieved": "2026-10-28",
+        "title": "Chat Completions API reference - Meta Model API",
+        "url": "https://dev.meta.ai/docs/api-reference/chat-completions"
+      },
+      {
+        "id": "D4",
+        "retrieved": "2026-10-28",
+        "title": "Reasoning - Meta Model API",
+        "url": "https://dev.meta.ai/docs/reasoning"
+      }
+    ],
+    "models": {
+      "spark": {
+        "documented_max_out": null,
+        "documented_max_reasoning": null,
+        "id": "muse-spark-1.3",
+        "id_doc": "D2",
+        "input_usd_per_mtok": 1.25,
+        "limits_doc": "D4",
+        "output_usd_per_mtok": 4.25,
+        "preview_doc": null,
+        "preview_status": null,
+        "pricing_doc": "D1",
+        "reasoning": "billed_as_output",
+        "reasoning_doc": "D4",
+        "reasoning_inside_max_out": true,
+        "request_max_out": 4096
+      },
+      "wonder": {
+        "documented_max_out": null,
+        "documented_max_reasoning": null,
+        "id": "muse-wonder-1.0",
+        "id_doc": "D2",
+        "input_usd_per_mtok": 4.0,
+        "limits_doc": "D4",
+        "output_usd_per_mtok": 20.0,
+        "preview_doc": "D2",
+        "preview_status": "preview",
+        "pricing_doc": "D1",
+        "reasoning": "billed_as_output",
+        "reasoning_doc": "D4",
+        "reasoning_inside_max_out": true,
+        "request_max_out": 8192
+      }
+    },
+    "status": {
+      "partners": {
+        "Baseten": "REQUESTED 2026-10-27; not approved; $0 active; not probed",
+        "Fireworks": "REQUESTED 2026-10-27; not approved; $0 active; not probed",
+        "Modal": "REQUESTED 2026-10-27; not approved; $0 active; not probed"
+      },
+      "spark_contributor_tier": "DISABLED for this event"
+    }
+  },
+  "format": "shaar-capability-probe-results/1",
+  "preflight": {
+    "decisions": [],
+    "effective_cap_usd": 10,
+    "out_bounds": {
+      "spark": 4096,
+      "wonder": 8192
+    },
+    "outcome": "PASS",
+    "problems": []
+  },
+  "validator_checks": {
+    "mutations": [
+      {
+        "attempt_id": "A04",
+        "mutation": "missing required field",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A04",
+        "mutation": "truncated reply",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A05",
+        "mutation": "missing required field",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A05",
+        "mutation": "truncated reply",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A06",
+        "mutation": "missing required field",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A06",
+        "mutation": "truncated reply",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A08",
+        "mutation": "missing required field",
+        "rejected": true
+      },
+      {
+        "attempt_id": "A08",
+        "mutation": "truncated reply",
+        "rejected": true
+      }
+    ],
+    "ok": true,
+    "revalidated": [
+      {
+        "attempt_id": "A04",
+        "matches_ledger": true,
+        "ok": true
+      },
+      {
+        "attempt_id": "A05",
+        "matches_ledger": true,
+        "ok": true
+      },
+      {
+        "attempt_id": "A06",
+        "matches_ledger": true,
+        "ok": true
+      },
+      {
+        "attempt_id": "A08",
+        "matches_ledger": true,
+        "ok": true
+      }
+    ],
+    "selftest_passed": 25,
+    "selftest_total": 25
+  }
+}

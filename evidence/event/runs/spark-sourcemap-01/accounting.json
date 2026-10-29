@@ -1,0 +1,44 @@
+{
+  "attempt": {
+    "allowance": {
+      "input_assumption": "input units bounded by request-body bytes plus 512, assuming at least one byte of body per input unit; this is an allowance, not a provider billing cap",
+      "input_units_bound": 1551,
+      "output_basis": "requested max output; reasoning recorded as included in it",
+      "output_units_bound": 4096,
+      "usd": 0.019347
+    },
+    "billing": "PENDING",
+    "kind": "primary",
+    "number": 1,
+    "pricing_doc": {
+      "id": "D1",
+      "retrieved": "2026-10-28",
+      "title": "Pricing and rate limits - Meta Model API",
+      "url": "https://dev.meta.ai/docs/pricing-rate-limits"
+    },
+    "reasoning_doc": {
+      "id": "D4",
+      "retrieved": "2026-10-28",
+      "title": "Reasoning - Meta Model API",
+      "url": "https://dev.meta.ai/docs/reasoning"
+    },
+    "sent": "yes",
+    "timing": {
+      "latency_ms": 3191
+    },
+    "usage_estimate_usd": 0.003398,
+    "warnings": []
+  },
+  "budget_before": {
+    "development_headroom_usd": 119.437675,
+    "final_reserve_usd": 30,
+    "headroom_usd": 1.0,
+    "prior_committed_allowance_usd": 0.562325,
+    "remaining_usd_billing_console_before_probing": 150,
+    "subcap_usd": 1.0
+  },
+  "format": "shaar-run-accounting/1",
+  "headroom_after_usd": 0.980653,
+  "note": "allowance is counted in full for every sent or possibly sent request",
+  "run_id": "spark-sourcemap-01"
+}

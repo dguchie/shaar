@@ -1,0 +1,264 @@
+{
+  "case": "hybrid-unconditional",
+  "checks": [
+    {
+      "attribution": "environment",
+      "evidence": [
+        "preflight"
+      ],
+      "id": "preflight",
+      "note": "pin, prefixes, client, ports and tools verified",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "reference",
+      "evidence": [
+        "control.c1",
+        "control.c2",
+        "control.c3",
+        "control.c4",
+        "control.c5",
+        "control.c6"
+      ],
+      "id": "controls",
+      "note": "all reference controls matched",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "policy",
+      "evidence": [
+        "patch"
+      ],
+      "id": "patch",
+      "note": "fixture hybrid-unconditional validated and applied in memory",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "source"
+      ],
+      "id": "source",
+      "note": "fresh export per arm; only the allowed file differs from the pin",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "integrity"
+      ],
+      "id": "integrity",
+      "note": "gate, policy, client, libraries and protected tree unchanged",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.identity"
+      ],
+      "id": "newer.identity",
+      "note": "headers, linkage and runtime-loaded libraries match the newer arm",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.build"
+      ],
+      "id": "newer.build",
+      "note": "configure, make, make install exit 0",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.regression"
+      ],
+      "id": "newer.regression",
+      "note": "# All 239 tests passed.",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.startup"
+      ],
+      "id": "newer.startup",
+      "note": "server listening on 127.0.0.1:55401 with ssl=on",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.mixed"
+      ],
+      "id": "newer.hs.mixed",
+      "note": "observed ok group=X25519MLKEM768",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.hybrid_only"
+      ],
+      "id": "newer.hs.hybrid_only",
+      "note": "observed ok group=X25519MLKEM768",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.x25519_only"
+      ],
+      "id": "newer.hs.x25519_only",
+      "note": "observed ok group=X25519",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.p256_only"
+      ],
+      "id": "newer.hs.p256_only",
+      "note": "observed ok group=P-256",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.identity"
+      ],
+      "id": "v30.identity",
+      "note": "headers, linkage and runtime-loaded libraries match the v30 arm",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.build"
+      ],
+      "id": "v30.build",
+      "note": "configure, make, make install exit 0",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.regression"
+      ],
+      "id": "v30.regression",
+      "note": "# All 239 tests passed.",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "candidate (server log shows ssl_groups configuration error)",
+      "evidence": [
+        "v30.startup"
+      ],
+      "id": "v30.startup",
+      "note": "server did not start (ssl_groups error in log: True)",
+      "required": true,
+      "result": "FAIL"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.mixed"
+      ],
+      "id": "v30.hs.mixed",
+      "note": "not run: server not started",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.hybrid_only"
+      ],
+      "id": "v30.hs.hybrid_only",
+      "note": "not run: server not started",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.x25519_only"
+      ],
+      "id": "v30.hs.x25519_only",
+      "note": "not run: server not started",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.p256_only"
+      ],
+      "id": "v30.hs.p256_only",
+      "note": "not run: server not started",
+      "required": true,
+      "result": "NOT_RUN"
+    }
+  ],
+  "claim": null,
+  "counts": {
+    "attempted": 17,
+    "blocked": 0,
+    "fail": 1,
+    "mandatory": 21,
+    "not_run": 4,
+    "pass": 16
+  },
+  "decided_by": "gate/check.py evaluate() from receipts, logs and policy; no model involved",
+  "gate_files": {
+    "gate/check.py": "35e7c5d4f5aa22daec0c3d63e885966afd0ad1ab5a11ef3599ed1fd7bd60ac5c",
+    "gate/fixtures/hybrid-unconditional.patch": "aa4b47d507f201168587a4ccc2ad68cb8de726a740f7dc55971e451ce07c421e",
+    "gate/fixtures/hybrid-versioned.patch": "4e1816d71f2352ea901f622756e05a76365694ad966d7de12349b48b8b7f7c63",
+    "gate/policy.json": "801325ee0b27a69ac03439aebd2e4e5908c89ec133b790cbb25c1e803582d34a"
+  },
+  "gate_identity": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "outcome": "REJECT",
+  "patch": {
+    "fixture": "hybrid-unconditional",
+    "sha256": "aa4b47d507f201168587a4ccc2ad68cb8de726a740f7dc55971e451ce07c421e"
+  },
+  "policy_sha256": "801325ee0b27a69ac03439aebd2e4e5908c89ec133b790cbb25c1e803582d34a",
+  "reason": "v30.startup FAIL: server did not start (ssl_groups error in log: True)",
+  "reference_run": {
+    "arm_results": {
+      "newer": {
+        "build": "PASS",
+        "regression": "PASS",
+        "startup": "PASS"
+      },
+      "v30": {
+        "build": "PASS",
+        "regression": "PASS",
+        "startup": "PASS"
+      }
+    },
+    "gate_identity": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+    "run_id": "baseline-03",
+    "verdict_sha256": "13dbeb8d7a90d6c6a5053a4b4b28b683b4770829439ae33e3ba0534e2d73f07b"
+  },
+  "run_id": "uncond-03",
+  "schema": "shaar.gate.verdict/1",
+  "upstream_commit": "68af68ac691f2b57d29524a191debed9b0bdd558"
+}

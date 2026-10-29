@@ -1,0 +1,29 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## initdb (last 15 of 23 lines)
+
+creating directory $WORK/uncond-03/data-v30 ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... America/Los_Angeles
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+
+Sync to disk skipped.
+The data directory might become corrupt if the operating system crashes.
+
+[exit 0]
+## pg_ctl start
+$ $WORK/uncond-03/prefix-v30/bin/pg_ctl -D $WORK/uncond-03/data-v30 -l $WORK/uncond-03/private-logs/v30/server.log -w -t 60 start
+waiting for server to start.... stopped waiting
+pg_ctl: could not start server
+Examine the log output.
+
+[exit 1]
+## server log
+2026-10-28 18:39:31.659 PDT [24329] FATAL:  could not set group names specified in ssl_groups: passed invalid argument
+2026-10-28 18:39:31.659 PDT [24329] HINT:  Ensure that each group name is spelled correctly and supported by the installed version of OpenSSL.
+2026-10-28 18:39:31.660 PDT [24329] LOG:  database system is shut down

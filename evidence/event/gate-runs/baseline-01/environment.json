@@ -1,0 +1,172 @@
+{
+  "arms": {
+    "newer": {
+      "cli": "/usr/local/opt/openssl@3/bin/openssl",
+      "cli_runtime": {
+        "loaded": {
+          "libcrypto.3.dylib": [
+            "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.3.dylib"
+          ],
+          "libssl.3.dylib": [
+            "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.3.dylib"
+          ]
+        },
+        "other_ssl_images": [
+          "/usr/lib/libcrypto.46.dylib",
+          "/usr/lib/libssl.48.dylib"
+        ],
+        "problems": []
+      },
+      "cli_version": "OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)",
+      "header_version": "3.6.3",
+      "lib_sha256": {
+        "libcrypto.3.dylib": "751c656470fc23731c69bb389cce2f7008c4258b8c2de98e24e7666142c554ce",
+        "libssl.3.dylib": "bad68fa256b2e55364fe039b02b9c67ff4da314169a02a9ffffa0db2a5304def"
+      },
+      "libdir_real": "/usr/local/Cellar/openssl@3/3.6.3/lib",
+      "libssl_libcrypto_dep": [
+        "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.3.dylib"
+      ],
+      "prefix": "/usr/local/opt/openssl@3",
+      "prefix_real": "/usr/local/Cellar/openssl@3/3.6.3",
+      "runtime_version": "3.6.3"
+    },
+    "v30": {
+      "cli": "$HOME/work/shaar/deps/ossl30/bin/openssl",
+      "cli_runtime": {
+        "loaded": {
+          "libcrypto.3.dylib": [
+            "$HOME/work/shaar/deps/ossl30/lib/libcrypto.3.dylib"
+          ],
+          "libssl.3.dylib": [
+            "$HOME/work/shaar/deps/ossl30/lib/libssl.3.dylib"
+          ]
+        },
+        "other_ssl_images": [
+          "/usr/lib/libcrypto.46.dylib",
+          "/usr/lib/libssl.48.dylib"
+        ],
+        "problems": []
+      },
+      "cli_version": "OpenSSL 3.0.22 25 Aug 2026 (Library: OpenSSL 3.0.22 25 Aug 2026)",
+      "header_version": "3.0.22",
+      "lib_sha256": {
+        "libcrypto.3.dylib": "288c9f6c64a35108602fd2e2adb6ceca2183da6776012f55c11f6098faa12ba4",
+        "libssl.3.dylib": "754c1423d7699443d9edd6f1a75b0aee81c7e02b8255c455bdddb37ba2b26725"
+      },
+      "libdir_real": "$HOME/work/shaar/deps/ossl30/lib",
+      "libssl_libcrypto_dep": [
+        "$HOME/work/shaar/deps/ossl30/lib/libcrypto.3.dylib"
+      ],
+      "prefix": "$HOME/work/shaar/deps/ossl30",
+      "prefix_real": "$HOME/work/shaar/deps/ossl30",
+      "runtime_version": "3.0.22"
+    }
+  },
+  "case": "baseline",
+  "child_env_keys": [
+    "GIT_OPTIONAL_LOCKS",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "PATH",
+    "TMPDIR"
+  ],
+  "configure": {
+    "newer": null,
+    "v30": null
+  },
+  "credential_like_names_in_child": [],
+  "credential_like_names_in_parent": [
+    "BASETEN_API_KEY",
+    "MODEL_API_KEY"
+  ],
+  "gate_files": {
+    "gate/check.py": "a449389b9cef9ee9cd142298f2744aa990ff76b702bb1704795e9aafe0844cb6",
+    "gate/fixtures/hybrid-unconditional.patch": "aa4b47d507f201168587a4ccc2ad68cb8de726a740f7dc55971e451ce07c421e",
+    "gate/fixtures/hybrid-versioned.patch": "4e1816d71f2352ea901f622756e05a76365694ad966d7de12349b48b8b7f7c63",
+    "gate/policy.json": "95f953a406bc70c148ff291829bbe5f4a351de12729c4b9627fe214edc3f0870"
+  },
+  "gate_identity": "a6dd9e125a31deb0723c1e7d1d4d693c5054887833bd42d1d029866f48310225",
+  "host": {
+    "arch": "x86_64",
+    "bison": "bison (GNU Bison) 2.3",
+    "clang": "Apple clang version 17.0.0 (clang-1700.6.3.2)",
+    "flex": "flex 2.6.4 Apple(flex-35)",
+    "macos": "26.2",
+    "make": "GNU Make 3.81",
+    "perl": "v5.34.1",
+    "python": "3.10.2"
+  },
+  "patch": null,
+  "ports": [
+    55401,
+    55402,
+    55411,
+    55412,
+    55413,
+    55414,
+    55415,
+    55416
+  ],
+  "protected_upstream": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  },
+  "protected_upstream_after": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  },
+  "reference_client": {
+    "path": "/usr/local/opt/openssl@3/bin/openssl",
+    "real": "/usr/local/Cellar/openssl@3/3.6.3/bin/openssl",
+    "runtime": {
+      "loaded": {
+        "libcrypto.3.dylib": [
+          "/usr/local/Cellar/openssl@3/3.6.3/lib/libcrypto.3.dylib"
+        ],
+        "libssl.3.dylib": [
+          "/usr/local/Cellar/openssl@3/3.6.3/lib/libssl.3.dylib"
+        ]
+      },
+      "other_ssl_images": [
+        "/usr/lib/libcrypto.46.dylib",
+        "/usr/lib/libssl.48.dylib"
+      ],
+      "problems": []
+    },
+    "sha256": "016bf94730a6b327aa1d6a800caebbf2e30a7c6c94ac3def3ed8ef5ffaa772e0",
+    "version": "OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)"
+  },
+  "repo_head": "f9fca402fe5e94e9829bb545ded90e8b73ce1e4d",
+  "run_id": "baseline-01",
+  "schema": "shaar.gate.environment/1",
+  "test_certificate_blobs": {
+    "src/test/ssl/ssl/root+server_ca.crt": "a094886e0f6634ddb46eadfe5682427989c375ce",
+    "src/test/ssl/ssl/server-cn-only.crt": "6429529226608631d3d8c56da34329d7d970935b",
+    "src/test/ssl/ssl/server-cn-only.key": "672d3f01d2ca8d5e4c1d98873f7f704381915846"
+  },
+  "tools": {
+    "bison": "/usr/bin/bison",
+    "clang": "/usr/bin/clang",
+    "flex": "/usr/bin/flex",
+    "git": "/usr/bin/git",
+    "lsof": "/usr/sbin/lsof",
+    "make": "/usr/bin/make",
+    "otool": "/usr/bin/otool",
+    "perl": "/usr/bin/perl",
+    "ps": "/bin/ps",
+    "tar": "/usr/bin/tar"
+  },
+  "upstream": {
+    "commit": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "export": "git archive of the pinned commit; upstream dependency source, not event-authored code",
+    "version_label": "PostgreSQL 20devel"
+  }
+}

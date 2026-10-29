@@ -1,0 +1,76 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## end-of-run identity
+{
+  "gate_identity_end": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "gate_identity_start": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "owned_processes": [
+    {
+      "pid": 24388,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 24396,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 24404,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 24412,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 24420,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 24428,
+      "stopped": true,
+      "what": "control s_server c6"
+    },
+    {
+      "pid": 37234,
+      "what": "postmaster newer"
+    },
+    {
+      "command_before_stop": "$WORK/versioned-03/prefix-newer/bin/postgres -D $WORK/versioned-03/data-newer",
+      "pid": 37234,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster newer"
+    },
+    {
+      "pid": 50201,
+      "what": "postmaster v30"
+    },
+    {
+      "command_before_stop": "$WORK/versioned-03/prefix-v30/bin/postgres -D $WORK/versioned-03/data-v30",
+      "pid": 50201,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster v30"
+    }
+  ],
+  "problems": [],
+  "protected_after": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  },
+  "protected_before": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  }
+}

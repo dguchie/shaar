@@ -1,0 +1,227 @@
+{
+  "case": "baseline",
+  "gate_identity": "a6dd9e125a31deb0723c1e7d1d4d693c5054887833bd42d1d029866f48310225",
+  "receipts": {
+    "control.c1": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=X25519MLKEM768 offer=X25519MLKEM768 -> ok X25519MLKEM768",
+      "group": "X25519MLKEM768",
+      "id": "control.c1",
+      "log": "logs/controls/c1.txt",
+      "log_sha256": "81077b8333df7f405ff7db44137b922a1aa7dd947c3e756f94cb04298d484af4",
+      "offer": "X25519MLKEM768",
+      "server_arm": "newer",
+      "server_groups": "X25519MLKEM768",
+      "status": "pass"
+    },
+    "control.c2": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=X25519 offer=X25519MLKEM768:X25519:P-256 -> ok X25519",
+      "group": "X25519",
+      "id": "control.c2",
+      "log": "logs/controls/c2.txt",
+      "log_sha256": "9c0c092d4d69c3371599e424ed2e1ac9bfc1f97e1e6fbd4d63d09db709ad23f4",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "newer",
+      "server_groups": "X25519",
+      "status": "pass"
+    },
+    "control.c3": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=P-256 offer=X25519MLKEM768:X25519:P-256 -> ok P-256",
+      "group": "P-256",
+      "id": "control.c3",
+      "log": "logs/controls/c3.txt",
+      "log_sha256": "e3841f0882cbcada8e4978e216eb92a24906feca4db681e616bd617ba1555977",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "newer",
+      "server_groups": "P-256",
+      "status": "pass"
+    },
+    "control.c4": {
+      "classification": "client_error",
+      "client_rc": 1,
+      "detail": "server_groups=X25519:P-256 offer=X25519MLKEM768 -> client_error None",
+      "group": null,
+      "id": "control.c4",
+      "log": "logs/controls/c4.txt",
+      "log_sha256": "78659d8f8f4a08bd77e620942dd7788bacdf08f105020fd5998c8291da4ed592",
+      "offer": "X25519MLKEM768",
+      "server_arm": "newer",
+      "server_groups": "X25519:P-256",
+      "status": "blocked"
+    },
+    "control.c5": {
+      "classification": "client_error",
+      "client_rc": 1,
+      "detail": "server_groups=X25519:prime256v1 offer=X25519MLKEM768 -> client_error None",
+      "group": null,
+      "id": "control.c5",
+      "log": "logs/controls/c5.txt",
+      "log_sha256": "848ae6db63ae27e30c7b088db62df3ff7a17132274fff9d9ca02105233f26f20",
+      "offer": "X25519MLKEM768",
+      "server_arm": "v30",
+      "server_groups": "X25519:prime256v1",
+      "status": "blocked"
+    },
+    "control.c6": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=prime256v1 offer=X25519MLKEM768:X25519:P-256 -> ok P-256",
+      "group": "P-256",
+      "id": "control.c6",
+      "log": "logs/controls/c6.txt",
+      "log_sha256": "929e9c49042cf0facc865f827ee80857485ef1c525b6ad3a47ad1d3fa11e8004",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "v30",
+      "server_groups": "prime256v1",
+      "status": "pass"
+    },
+    "integrity": {
+      "detail": "gate, policy, client, libraries and protected tree unchanged",
+      "id": "integrity",
+      "log": "logs/integrity.txt",
+      "log_sha256": "c62c53d1eecf1ffee5af9036b79db8d6582e3fb372d7da48596e4065cd88ffbc",
+      "status": "pass"
+    },
+    "newer.build": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.build",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.hs.hybrid_only": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.hs.hybrid_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.hs.mixed": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.hs.mixed",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.hs.p256_only": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.hs.p256_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.hs.x25519_only": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.hs.x25519_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.identity": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.identity",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.regression": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.regression",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "newer.startup": {
+      "detail": "not run: reference controls failed",
+      "id": "newer.startup",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "patch": {
+      "detail": "not run: reference controls failed",
+      "id": "patch",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "preflight": {
+      "detail": "pin, prefixes, client, ports and tools verified",
+      "id": "preflight",
+      "log": "logs/preflight.txt",
+      "log_sha256": "bc84a8ad071f343627f04c2daebad54db9982be8965d870993164ee22ec74f80",
+      "status": "pass"
+    },
+    "source": {
+      "detail": "not run: reference controls failed",
+      "id": "source",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.build": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.build",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.hs.hybrid_only": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.hs.hybrid_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.hs.mixed": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.hs.mixed",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.hs.p256_only": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.hs.p256_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.hs.x25519_only": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.hs.x25519_only",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.identity": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.identity",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.regression": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.regression",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    },
+    "v30.startup": {
+      "detail": "not run: reference controls failed",
+      "id": "v30.startup",
+      "log": null,
+      "log_sha256": null,
+      "status": "not_run"
+    }
+  },
+  "reference": null,
+  "run_id": "baseline-02",
+  "schema": "shaar.gate.observations/1"
+}

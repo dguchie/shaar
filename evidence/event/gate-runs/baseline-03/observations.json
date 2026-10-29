@@ -1,0 +1,296 @@
+{
+  "case": "baseline",
+  "gate_identity": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "receipts": {
+    "control.c1": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=X25519MLKEM768 offer=X25519MLKEM768 -> ok X25519MLKEM768",
+      "group": "X25519MLKEM768",
+      "id": "control.c1",
+      "log": "logs/controls/c1.txt",
+      "log_sha256": "752f9f98d46f49eb243b21fb6781ff6316f983de49d208ffba48174e97e1f815",
+      "offer": "X25519MLKEM768",
+      "server_arm": "newer",
+      "server_groups": "X25519MLKEM768",
+      "status": "pass"
+    },
+    "control.c2": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=X25519 offer=X25519MLKEM768:X25519:P-256 -> ok X25519",
+      "group": "X25519",
+      "id": "control.c2",
+      "log": "logs/controls/c2.txt",
+      "log_sha256": "5ea641f6813853131501eac65156a55761a8f7c482d2ab4365e014881f3ca917",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "newer",
+      "server_groups": "X25519",
+      "status": "pass"
+    },
+    "control.c3": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=P-256 offer=X25519MLKEM768:X25519:P-256 -> ok P-256",
+      "group": "P-256",
+      "id": "control.c3",
+      "log": "logs/controls/c3.txt",
+      "log_sha256": "5097489cca7f0df3a984b42c27163c7ca29cd459fe1a9aef650548a885819009",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "newer",
+      "server_groups": "P-256",
+      "status": "pass"
+    },
+    "control.c4": {
+      "classification": "tls_failure",
+      "client_rc": 1,
+      "detail": "server_groups=X25519:P-256 offer=X25519MLKEM768 -> tls_failure None",
+      "group": null,
+      "id": "control.c4",
+      "log": "logs/controls/c4.txt",
+      "log_sha256": "e30f19f98e0dcfdf066394e86d2761f925d32863794a1532c2e3c990aa5ca54b",
+      "offer": "X25519MLKEM768",
+      "server_arm": "newer",
+      "server_groups": "X25519:P-256",
+      "status": "pass"
+    },
+    "control.c5": {
+      "classification": "tls_failure",
+      "client_rc": 1,
+      "detail": "server_groups=X25519:prime256v1 offer=X25519MLKEM768 -> tls_failure None",
+      "group": null,
+      "id": "control.c5",
+      "log": "logs/controls/c5.txt",
+      "log_sha256": "82ff7de197e529abd92a2cb608684240caeeab02fea87f0d8f79b1849f67c3cf",
+      "offer": "X25519MLKEM768",
+      "server_arm": "v30",
+      "server_groups": "X25519:prime256v1",
+      "status": "pass"
+    },
+    "control.c6": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "server_groups=prime256v1 offer=X25519MLKEM768:X25519:P-256 -> ok P-256",
+      "group": "P-256",
+      "id": "control.c6",
+      "log": "logs/controls/c6.txt",
+      "log_sha256": "6d21dc2eedd63496f7ab0a22145b29037f446bfd0bcdcc6babd5053cb2f006a0",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "server_arm": "v30",
+      "server_groups": "prime256v1",
+      "status": "pass"
+    },
+    "integrity": {
+      "detail": "gate, policy, client, libraries and protected tree unchanged",
+      "id": "integrity",
+      "log": "logs/integrity.txt",
+      "log_sha256": "fd459ef8082a00c00be0900da89a19e6cee06df08a9ec70784f43c0be3d4903d",
+      "status": "pass"
+    },
+    "newer.build": {
+      "detail": "configure, make, make install exit 0",
+      "id": "newer.build",
+      "log": "logs/newer/build.txt",
+      "log_sha256": "40793f35ef48924f2126acb3f525db74e389c24e96c118f7abd7dae3615a089e",
+      "status": "pass"
+    },
+    "newer.hs.hybrid_only": {
+      "classification": "tls_failure",
+      "client_rc": 1,
+      "detail": "offer=X25519MLKEM768 -> tls_failure None",
+      "expect": {
+        "group": "X25519MLKEM768",
+        "result": "ok"
+      },
+      "group": null,
+      "id": "newer.hs.hybrid_only",
+      "log": "logs/newer/hs-hybrid_only.txt",
+      "log_sha256": "0d67806f7e6ed9db88af67e3d4f73ff21f24940715b7f9aa4348fb98a2bcc046",
+      "offer": "X25519MLKEM768",
+      "status": "fail"
+    },
+    "newer.hs.mixed": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=X25519MLKEM768:X25519:P-256 -> ok X25519",
+      "expect": {
+        "group": "X25519MLKEM768",
+        "result": "ok"
+      },
+      "group": "X25519",
+      "id": "newer.hs.mixed",
+      "log": "logs/newer/hs-mixed.txt",
+      "log_sha256": "3115a5895f10cb7727d01fcfc6b699d8ff9a6ad0a61749c8b98cd0bfaf99d1ad",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "status": "fail"
+    },
+    "newer.hs.p256_only": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=P-256 -> ok P-256",
+      "expect": {
+        "group": "P-256",
+        "result": "ok"
+      },
+      "group": "P-256",
+      "id": "newer.hs.p256_only",
+      "log": "logs/newer/hs-p256_only.txt",
+      "log_sha256": "c1f503a197d0f66436c68847b0e249c2175b264814b4cb8fe98a8a2e4772aa7c",
+      "offer": "P-256",
+      "status": "pass"
+    },
+    "newer.hs.x25519_only": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=X25519 -> ok X25519",
+      "expect": {
+        "group": "X25519",
+        "result": "ok"
+      },
+      "group": "X25519",
+      "id": "newer.hs.x25519_only",
+      "log": "logs/newer/hs-x25519_only.txt",
+      "log_sha256": "39d4de9da81998239726c3af8decb0a5be4e42d3f4fe3d00ea95641a74226cbf",
+      "offer": "X25519",
+      "status": "pass"
+    },
+    "newer.identity": {
+      "compiled_default_ssl_groups": "X25519:prime256v1",
+      "detail": "headers, linkage and runtime-loaded libraries match the newer arm",
+      "id": "newer.identity",
+      "log": "logs/newer/identity.txt",
+      "log_sha256": "2dc430ca1553635ff2d5d79f752301616bec042e792606cab8441cef2cc10d01",
+      "status": "pass"
+    },
+    "newer.regression": {
+      "detail": "# All 239 tests passed.",
+      "id": "newer.regression",
+      "log": "logs/newer/regression.txt",
+      "log_sha256": "46dac842e9e9a4cbf0511bb4ba14ea913484773117db204af390f7423e57933d",
+      "status": "pass"
+    },
+    "newer.startup": {
+      "detail": "server listening on 127.0.0.1:55401 with ssl=on",
+      "id": "newer.startup",
+      "log": "logs/newer/startup.txt",
+      "log_sha256": "f34f39c5fea188f20f57831d5404bd6adf6023622fe2016cd07bdc8a0bd0cdfc",
+      "status": "pass"
+    },
+    "patch": {
+      "detail": "no patch (baseline)",
+      "fixture": null,
+      "id": "patch",
+      "log": "logs/patch.txt",
+      "log_sha256": "10959c63dd3f75fcdf73522780f9565c79d8ffc09ab90b1178ff4ccaba98cdbf",
+      "status": "pass"
+    },
+    "preflight": {
+      "detail": "pin, prefixes, client, ports and tools verified",
+      "id": "preflight",
+      "log": "logs/preflight.txt",
+      "log_sha256": "bc84a8ad071f343627f04c2daebad54db9982be8965d870993164ee22ec74f80",
+      "status": "pass"
+    },
+    "source": {
+      "detail": "fresh export per arm; only the allowed file differs from the pin",
+      "id": "source",
+      "log": "logs/source.txt",
+      "log_sha256": "09e4360b87cb27cb894f31f36def0dbe74fd707715dd31cc90bc27846f340b28",
+      "status": "pass"
+    },
+    "v30.build": {
+      "detail": "configure, make, make install exit 0",
+      "id": "v30.build",
+      "log": "logs/v30/build.txt",
+      "log_sha256": "4e051f9d859113282da2a16ec548a147a7925a34ab3e9328ba583474bb676a96",
+      "status": "pass"
+    },
+    "v30.hs.hybrid_only": {
+      "classification": "tls_failure",
+      "client_rc": 1,
+      "detail": "offer=X25519MLKEM768 -> tls_failure None",
+      "expect": {
+        "result": "tls_failure"
+      },
+      "group": null,
+      "id": "v30.hs.hybrid_only",
+      "log": "logs/v30/hs-hybrid_only.txt",
+      "log_sha256": "b3bba6b8e51a848e54b851009736456ef81ad04749a9d58ba819e89b8ecaea9a",
+      "offer": "X25519MLKEM768",
+      "status": "pass"
+    },
+    "v30.hs.mixed": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=X25519MLKEM768:X25519:P-256 -> ok X25519",
+      "expect": {
+        "group_in": [
+          "X25519",
+          "P-256"
+        ],
+        "result": "ok"
+      },
+      "group": "X25519",
+      "id": "v30.hs.mixed",
+      "log": "logs/v30/hs-mixed.txt",
+      "log_sha256": "4ee917c5f2f43273fc185552c67cf644b345021c735d0af7de52fef0e9653031",
+      "offer": "X25519MLKEM768:X25519:P-256",
+      "status": "pass"
+    },
+    "v30.hs.p256_only": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=P-256 -> ok P-256",
+      "expect": {
+        "group": "P-256",
+        "result": "ok"
+      },
+      "group": "P-256",
+      "id": "v30.hs.p256_only",
+      "log": "logs/v30/hs-p256_only.txt",
+      "log_sha256": "556542342b615bcf1f70aa94a45ddb00a77b84066ee25e8c3a5dd3a21cd3d97e",
+      "offer": "P-256",
+      "status": "pass"
+    },
+    "v30.hs.x25519_only": {
+      "classification": "ok",
+      "client_rc": 0,
+      "detail": "offer=X25519 -> ok X25519",
+      "expect": {
+        "group": "X25519",
+        "result": "ok"
+      },
+      "group": "X25519",
+      "id": "v30.hs.x25519_only",
+      "log": "logs/v30/hs-x25519_only.txt",
+      "log_sha256": "6e33461ccc2153ad66dc24d6d7ca886cfc8b269405b92ba88da60edca7d83363",
+      "offer": "X25519",
+      "status": "pass"
+    },
+    "v30.identity": {
+      "compiled_default_ssl_groups": "X25519:prime256v1",
+      "detail": "headers, linkage and runtime-loaded libraries match the v30 arm",
+      "id": "v30.identity",
+      "log": "logs/v30/identity.txt",
+      "log_sha256": "2ad0d87786673c35d80f7ff13a43757164aa05fcf1bcfa444856a447a557bb64",
+      "status": "pass"
+    },
+    "v30.regression": {
+      "detail": "# All 239 tests passed.",
+      "id": "v30.regression",
+      "log": "logs/v30/regression.txt",
+      "log_sha256": "09cbadee0485852bf77f50ca6a1f5f1e48cd2bfb1f2b8cae9188436a6c3e8571",
+      "status": "pass"
+    },
+    "v30.startup": {
+      "detail": "server listening on 127.0.0.1:55402 with ssl=on",
+      "id": "v30.startup",
+      "log": "logs/v30/startup.txt",
+      "log_sha256": "3853fa5023b12dd60eb9a6a5c181dedc2560abfad95fa92a48626c6e6bcc0498",
+      "status": "pass"
+    }
+  },
+  "reference": null,
+  "run_id": "baseline-03",
+  "schema": "shaar.gate.observations/1"
+}

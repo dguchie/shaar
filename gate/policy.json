@@ -1,0 +1,125 @@
+{
+  "schema": "shaar.gate.policy/1",
+  "scope": "PostgreSQL server default TLS key-exchange groups (DEFAULT_SSL_GROUPS) on one tested macOS machine. Bounded case; not a general patch gate.",
+  "upstream": {
+    "commit": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "version_label": "PostgreSQL 20devel",
+    "export": "git archive of the pinned commit; upstream dependency source, not event-authored code"
+  },
+  "patch_policy": {
+    "max_patch_bytes": 4096,
+    "allowed_files": {
+      "src/include/libpq/libpq.h": {
+        "git_blob": "d15073a0a93a0e12aa7d7b0d64ff7a4e511add4d",
+        "sha256": "c7124f50fd4a237a9fc48fc802075fff35292247dc336d96aeae84dc6981c2de",
+        "editable_lines": [137, 141]
+      }
+    },
+    "added_line_patterns": [
+      "^#ifdef USE_SSL$",
+      "^#include <openssl/opensslv\\.h>$",
+      "^#if OPENSSL_VERSION_NUMBER >= 0x[0-9A-F]{8}L$",
+      "^#else$",
+      "^#endif$",
+      "^#define DEFAULT_SSL_GROUPS \"[A-Za-z0-9_:-]{1,128}\"$"
+    ],
+    "allowed_group_names": ["X25519MLKEM768", "X25519", "prime256v1", "secp256r1", "P-256", "none"],
+    "forbidden_header_markers": [
+      "GIT binary patch", "Binary files", "new file mode", "deleted file mode",
+      "old mode", "new mode", "rename from", "rename to", "copy from", "copy to",
+      "similarity index", "dissimilarity index", "/dev/null"
+    ]
+  },
+  "fixtures": {
+    "hybrid-unconditional": {
+      "path": "gate/fixtures/hybrid-unconditional.patch",
+      "meaning": "Explicitly scripted incompatible fixture: hybrid-first default with classical alternatives and no library-version awareness. Written by hand to expose the OpenSSL 3.0 compatibility trap. Not a model candidate."
+    },
+    "hybrid-versioned": {
+      "path": "gate/fixtures/hybrid-versioned.patch",
+      "meaning": "Explicitly scripted compatibility fixture: hybrid-first default with classical fallback when built against OpenSSL >= 3.5, legacy classical default otherwise. Written by hand. Not a model repair and not a presumed accepted patch."
+    }
+  },
+  "cases": {
+    "baseline": {"run_id_prefix": "baseline", "fixture": null},
+    "hybrid-unconditional": {"run_id_prefix": "uncond", "fixture": "hybrid-unconditional"},
+    "hybrid-versioned": {"run_id_prefix": "versioned", "fixture": "hybrid-versioned"}
+  },
+  "run_id_pattern": "^(baseline|uncond|versioned)-[0-9]{2}$",
+  "matrix": {
+    "newer": {"label": "OpenSSL >= 3.5", "min_version": [3, 5, 0], "max_version_exclusive": [4, 0, 0], "server_port": 55401},
+    "v30": {"label": "OpenSSL 3.0.x", "min_version": [3, 0, 0], "max_version_exclusive": [3, 1, 0], "server_port": 55402}
+  },
+  "configure_args": ["--with-openssl", "--without-icu", "--without-readline"],
+  "server_settings": {
+    "listen_addresses": "127.0.0.1",
+    "ssl": "on",
+    "ssl_cert_file": "server.crt",
+    "ssl_key_file": "server.key",
+    "note": "ssl_groups is deliberately not set, so the compiled default is what is tested"
+  },
+  "test_certificates": {
+    "server_cert": "src/test/ssl/ssl/server-cn-only.crt",
+    "server_key": "src/test/ssl/ssl/server-cn-only.key",
+    "ca_cert": "src/test/ssl/ssl/root+server_ca.crt",
+    "expected_peer_name": "common-name.pg-ssltest.test",
+    "note": "Upstream PostgreSQL test certificates, read from the pinned commit. Server authentication is classical (RSA)."
+  },
+  "client": {
+    "route": "openssl s_client -starttls postgres -tls1_3 -groups OFFER -CAfile CA -verify_hostname NAME -verify_return_error",
+    "tls_version": "TLSv1.3 (forced by the client; server protocol settings left at their defaults)",
+    "group_line_patterns": [
+      "^Negotiated TLS1\\.3 group: (\\S+)$",
+      "^(?:Peer|Server) Temp Key: (X25519), [0-9]+ bits$",
+      "^(?:Peer|Server) Temp Key: ECDH, (\\S+), [0-9]+ bits$"
+    ],
+    "null_group_values": ["<NULL>"],
+    "group_line_prefixes": ["Negotiated TLS1.3 group:", "Peer Temp Key:", "Server Temp Key:"],
+    "tls13_patterns": ["^Protocol: TLSv1\\.3$", "^Protocol version: TLSv1\\.3$", "^New, TLSv1\\.3, Cipher is "],
+    "classification": "ok = exit 0, exactly one recognized group line, Verification: OK, expected Verified peername, a TLSv1.3 line, no alert. tls_failure = non-zero exit, SSL alert number 40, no group line other than a null group (\"<NULL>\"), no Verified peername line. A null group line never counts as an observed group. Anything else = client_error (BLOCKED).",
+    "tls_failure_marker": "SSL alert number 40",
+    "group_aliases": {
+      "X25519MLKEM768": "X25519MLKEM768",
+      "X25519": "X25519",
+      "x25519": "X25519",
+      "prime256v1": "P-256",
+      "secp256r1": "P-256",
+      "P-256": "P-256"
+    }
+  },
+  "controls": [
+    {"id": "c1", "server_arm": "newer", "port": 55411, "server_groups": "X25519MLKEM768", "offer": "X25519MLKEM768", "expect": {"result": "ok", "group": "X25519MLKEM768"}},
+    {"id": "c2", "server_arm": "newer", "port": 55412, "server_groups": "X25519", "offer": "X25519MLKEM768:X25519:P-256", "expect": {"result": "ok", "group": "X25519"}},
+    {"id": "c3", "server_arm": "newer", "port": 55413, "server_groups": "P-256", "offer": "X25519MLKEM768:X25519:P-256", "expect": {"result": "ok", "group": "P-256"}},
+    {"id": "c4", "server_arm": "newer", "port": 55414, "server_groups": "X25519:P-256", "offer": "X25519MLKEM768", "expect": {"result": "tls_failure"}},
+    {"id": "c5", "server_arm": "v30", "port": 55415, "server_groups": "X25519:prime256v1", "offer": "X25519MLKEM768", "expect": {"result": "tls_failure"}},
+    {"id": "c6", "server_arm": "v30", "port": 55416, "server_groups": "prime256v1", "offer": "X25519MLKEM768:X25519:P-256", "expect": {"result": "ok", "group": "P-256"}}
+  ],
+  "handshake_matrix": {
+    "newer": [
+      {"id": "mixed", "offer": "X25519MLKEM768:X25519:P-256", "expect": {"result": "ok", "group": "X25519MLKEM768"}},
+      {"id": "hybrid_only", "offer": "X25519MLKEM768", "expect": {"result": "ok", "group": "X25519MLKEM768"}},
+      {"id": "x25519_only", "offer": "X25519", "expect": {"result": "ok", "group": "X25519"}},
+      {"id": "p256_only", "offer": "P-256", "expect": {"result": "ok", "group": "P-256"}}
+    ],
+    "v30": [
+      {"id": "mixed", "offer": "X25519MLKEM768:X25519:P-256", "expect": {"result": "ok", "group_in": ["X25519", "P-256"]}},
+      {"id": "x25519_only", "offer": "X25519", "expect": {"result": "ok", "group": "X25519"}},
+      {"id": "p256_only", "offer": "P-256", "expect": {"result": "ok", "group": "P-256"}},
+      {"id": "hybrid_only", "offer": "X25519MLKEM768", "expect": {"result": "tls_failure"}}
+    ]
+  },
+  "mandatory_checks": {
+    "global": ["preflight", "controls", "patch", "source", "integrity"],
+    "per_arm": ["identity", "build", "regression", "startup", "hs.mixed", "hs.hybrid_only", "hs.x25519_only", "hs.p256_only"]
+  },
+  "verdict_policy": [
+    "1. BLOCKED if preflight or controls is not PASS (reference environment not established).",
+    "2. REJECT if the patch fails policy validation (nothing after it runs).",
+    "3. BLOCKED if patch, source or integrity is not PASS.",
+    "4. REJECT if any check FAILs in an arm whose identity is not BLOCKED.",
+    "5. BLOCKED if any mandatory check is BLOCKED or NOT_RUN.",
+    "6. ACCEPT only if every mandatory check is PASS.",
+    "Attribution: build or regression failure counts as FAIL only when a reference baseline run with the same gate identity passed that check in the same arm; otherwise BLOCKED. Startup failure counts as FAIL when the server log shows the ssl_groups configuration error or the reference passed startup in that arm; otherwise BLOCKED. Handshake: wrong group, unexpected failure or unexpected success is FAIL; unclassifiable client output is BLOCKED. Downstream checks after a build or startup failure are NOT_RUN. A receipt whose log is missing, whose log hash differs, or whose fields disagree with its re-parsed log is BLOCKED."
+  ]
+}

@@ -1,0 +1,63 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## make check (exit 0) (last 60 of 285 lines)
+# parallel group (9 tests):  jsonpath_encoding json_encoding jsonpath sqljson_jsontable json sqljson sqljson_queryfuncs jsonb_jsonpath jsonb
+ok 189       + json                                      142 ms
+ok 190       + jsonb                                     294 ms
+ok 191       + json_encoding                              57 ms
+ok 192       + jsonpath                                   82 ms
+ok 193       + jsonpath_encoding                          55 ms
+ok 194       + jsonb_jsonpath                            180 ms
+ok 195       + sqljson                                   150 ms
+ok 196       + sqljson_queryfuncs                        158 ms
+ok 197       + sqljson_jsontable                         125 ms
+# parallel group (18 tests):  xml prepare limit plancache conversion returning rowtypes polymorphism sequence rangefuncs copy2 largeobject with temp truncate domain plpgsql alter_table
+ok 198       + plancache                                 180 ms
+ok 199       + limit                                     148 ms
+ok 200       + plpgsql                                   609 ms
+ok 201       + copy2                                     333 ms
+ok 202       + temp                                      377 ms
+ok 203       + domain                                    417 ms
+ok 204       + rangefuncs                                322 ms
+ok 205       + prepare                                   106 ms
+ok 206       + conversion                                192 ms
+ok 207       + truncate                                  392 ms
+ok 208       + alter_table                              1366 ms
+ok 209       + sequence                                  298 ms
+ok 210       + polymorphism                              278 ms
+ok 211       + rowtypes                                  268 ms
+ok 212       + returning                                 231 ms
+ok 213       + largeobject                               319 ms
+ok 214       + with                                      335 ms
+ok 215       + xml                                        77 ms
+# parallel group (15 tests):  numa hash_part planner_est reloptions partition_info explain predicate memoize eager_aggregate partition_aggregate tuplesort partition_join partition_prune indexing stats
+ok 216       + partition_join                            838 ms
+ok 217       + partition_prune                           908 ms
+ok 218       + reloptions                                132 ms
+ok 219       + hash_part                                  94 ms
+ok 220       + indexing                                 1065 ms
+ok 221       + partition_aggregate                       592 ms
+ok 222       + partition_info                            146 ms
+ok 223       + tuplesort                                 692 ms
+ok 224       + explain                                   152 ms
+ok 225       + memoize                                   235 ms
+ok 226       + stats                                    1301 ms
+ok 227       + predicate                                 161 ms
+ok 228       + numa                                       69 ms
+ok 229       + eager_aggregate                           327 ms
+ok 230       + planner_est                                93 ms
+# parallel group (4 tests):  compression_lz4 compression_pglz compression cluster
+ok 231       + compression                               143 ms
+ok 232       + compression_lz4                            45 ms
+ok 233       + compression_pglz                           49 ms
+ok 234       + cluster                                   345 ms
+# parallel group (2 tests):  oidjoins event_trigger
+ok 235       + oidjoins                                  177 ms
+ok 236       + event_trigger                             203 ms
+ok 237       - event_trigger_login                        65 ms
+ok 238       - fast_default                              186 ms
+ok 239       - tablespace                                346 ms
+1..239
+# All 239 tests passed.
+
+[exit 0]

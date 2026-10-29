@@ -1,0 +1,54 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## end-of-run identity
+{
+  "gate_identity_end": "a6dd9e125a31deb0723c1e7d1d4d693c5054887833bd42d1d029866f48310225",
+  "gate_identity_start": "a6dd9e125a31deb0723c1e7d1d4d693c5054887833bd42d1d029866f48310225",
+  "owned_processes": [
+    {
+      "pid": 71795,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 71803,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 71811,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 71819,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 71827,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 71836,
+      "stopped": true,
+      "what": "control s_server c6"
+    }
+  ],
+  "problems": [],
+  "protected_after": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  },
+  "protected_before": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  }
+}

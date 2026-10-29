@@ -1,0 +1,43 @@
+{
+  "elapsed_seconds": 3.7,
+  "finished_utc": "2026-10-29T01:27:16Z",
+  "jobs": 16,
+  "model_calls": 0,
+  "owned_processes": [
+    {
+      "pid": 71620,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 71628,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 71636,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 71645,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 71653,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 71661,
+      "stopped": true,
+      "what": "control s_server c6"
+    }
+  ],
+  "run_id": "baseline-01",
+  "schema": "shaar.gate.accounting/1",
+  "started_utc": "2026-10-29T01:27:13Z",
+  "steps": [],
+  "stop_reason": "reference controls failed"
+}

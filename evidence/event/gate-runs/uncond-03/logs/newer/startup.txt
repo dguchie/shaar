@@ -1,0 +1,30 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## initdb (last 15 of 23 lines)
+
+creating directory $WORK/uncond-03/data-newer ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... America/Los_Angeles
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+
+Sync to disk skipped.
+The data directory might become corrupt if the operating system crashes.
+
+[exit 0]
+## pg_ctl start
+$ $WORK/uncond-03/prefix-newer/bin/pg_ctl -D $WORK/uncond-03/data-newer -l $WORK/uncond-03/private-logs/newer/server.log -w -t 60 start
+waiting for server to start.... done
+server started
+
+[exit 0]
+## server log
+2026-10-28 18:37:40.509 PDT [11554] LOG:  starting PostgreSQL 20devel on x86_64-apple-darwin25.2.0, compiled by Apple clang version 17.0.0 (clang-1700.6.3.2), 64-bit
+2026-10-28 18:37:40.510 PDT [11554] LOG:  listening on IPv4 address "127.0.0.1", port 55401
+2026-10-28 18:37:40.510 PDT [11554] LOG:  listening on Unix socket "$WORK/uncond-03/sock/.s.PGSQL.55401"
+2026-10-28 18:37:40.515 PDT [11559] LOG:  database system was shut down at 2026-10-28 18:37:40 PDT
+2026-10-28 18:37:40.518 PDT [11554] LOG:  database system is ready to accept connections

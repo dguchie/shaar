@@ -1,0 +1,245 @@
+{
+  "case": "baseline",
+  "checks": [
+    {
+      "attribution": "environment",
+      "evidence": [
+        "preflight"
+      ],
+      "id": "preflight",
+      "note": "pin, prefixes, client, ports and tools verified",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "reference",
+      "evidence": [
+        "control.c1",
+        "control.c2",
+        "control.c3",
+        "control.c4",
+        "control.c5",
+        "control.c6"
+      ],
+      "id": "controls",
+      "note": "control.c4 BLOCKED (client output not classifiable); control.c5 BLOCKED (client output not classifiable)",
+      "required": true,
+      "result": "BLOCKED"
+    },
+    {
+      "attribution": "policy",
+      "evidence": [
+        "patch"
+      ],
+      "id": "patch",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "source"
+      ],
+      "id": "source",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "integrity"
+      ],
+      "id": "integrity",
+      "note": "gate, policy, client, libraries and protected tree unchanged",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.identity"
+      ],
+      "id": "newer.identity",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.build"
+      ],
+      "id": "newer.build",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.regression"
+      ],
+      "id": "newer.regression",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.startup"
+      ],
+      "id": "newer.startup",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.mixed"
+      ],
+      "id": "newer.hs.mixed",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.hybrid_only"
+      ],
+      "id": "newer.hs.hybrid_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.x25519_only"
+      ],
+      "id": "newer.hs.x25519_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.p256_only"
+      ],
+      "id": "newer.hs.p256_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.identity"
+      ],
+      "id": "v30.identity",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.build"
+      ],
+      "id": "v30.build",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.regression"
+      ],
+      "id": "v30.regression",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.startup"
+      ],
+      "id": "v30.startup",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.mixed"
+      ],
+      "id": "v30.hs.mixed",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.hybrid_only"
+      ],
+      "id": "v30.hs.hybrid_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.x25519_only"
+      ],
+      "id": "v30.hs.x25519_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.p256_only"
+      ],
+      "id": "v30.hs.p256_only",
+      "note": "not run: reference controls failed",
+      "required": true,
+      "result": "NOT_RUN"
+    }
+  ],
+  "claim": null,
+  "counts": {
+    "attempted": 3,
+    "blocked": 1,
+    "fail": 0,
+    "mandatory": 21,
+    "not_run": 18,
+    "pass": 2
+  },
+  "decided_by": "gate/check.py evaluate() from receipts, logs and policy; no model involved",
+  "gate_files": {
+    "gate/check.py": "a449389b9cef9ee9cd142298f2744aa990ff76b702bb1704795e9aafe0844cb6",
+    "gate/fixtures/hybrid-unconditional.patch": "aa4b47d507f201168587a4ccc2ad68cb8de726a740f7dc55971e451ce07c421e",
+    "gate/fixtures/hybrid-versioned.patch": "4e1816d71f2352ea901f622756e05a76365694ad966d7de12349b48b8b7f7c63",
+    "gate/policy.json": "95f953a406bc70c148ff291829bbe5f4a351de12729c4b9627fe214edc3f0870"
+  },
+  "gate_identity": "a6dd9e125a31deb0723c1e7d1d4d693c5054887833bd42d1d029866f48310225",
+  "outcome": "BLOCKED",
+  "patch": null,
+  "policy_sha256": "95f953a406bc70c148ff291829bbe5f4a351de12729c4b9627fe214edc3f0870",
+  "reason": "controls BLOCKED: control.c4 BLOCKED (client output not classifiable); control.c5 BLOCKED (client output not classifiable)",
+  "reference_run": null,
+  "run_id": "baseline-01",
+  "schema": "shaar.gate.verdict/1",
+  "upstream_commit": "68af68ac691f2b57d29524a191debed9b0bdd558"
+}

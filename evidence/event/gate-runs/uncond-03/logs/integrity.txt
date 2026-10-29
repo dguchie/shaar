@@ -1,0 +1,65 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## end-of-run identity
+{
+  "gate_identity_end": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "gate_identity_start": "37aaa09d08a842caede30314fb0179f63befcdb1d77aec8bb14e94a2b7eb9b94",
+  "owned_processes": [
+    {
+      "pid": 97871,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 97879,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 97887,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 97895,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 97903,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 97911,
+      "stopped": true,
+      "what": "control s_server c6"
+    },
+    {
+      "pid": 11554,
+      "what": "postmaster newer"
+    },
+    {
+      "command_before_stop": "$WORK/uncond-03/prefix-newer/bin/postgres -D $WORK/uncond-03/data-newer",
+      "pid": 11554,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster newer"
+    }
+  ],
+  "problems": [],
+  "protected_after": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  },
+  "protected_before": {
+    "head": "68af68ac691f2b57d29524a191debed9b0bdd558",
+    "installed_bin_digest": "f2f9e75ca0fe2b5e7506477220f67aa8e7c8a0d6b463d738dcacd9d539eb8dae",
+    "installed_bin_files": 35,
+    "pin_type": "commit",
+    "tracked_modified": 0
+  }
+}

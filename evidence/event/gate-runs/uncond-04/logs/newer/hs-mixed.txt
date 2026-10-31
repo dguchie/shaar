@@ -1,0 +1,47 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## client output
+$ /usr/local/opt/openssl@3/bin/openssl s_client -connect 127.0.0.1:55401 -starttls postgres -tls1_3 -groups X25519MLKEM768:X25519:P-256 -CAfile $WORK/uncond-04/certs/root+server_ca.crt -verify_hostname common-name.pg-ssltest.test -verify_return_error
+Connecting to 127.0.0.1
+Can't use SSL_get_servername
+depth=2 CN=Test root CA for PostgreSQL SSL regression test suite
+verify return:1
+depth=1 CN=Test CA for PostgreSQL SSL regression test server certs
+verify return:1
+depth=0 OU=PostgreSQL test suite, CN=common-name.pg-ssltest.test
+verify return:1
+CONNECTED(00000003)
+---
+Certificate chain
+ 0 s:OU=PostgreSQL test suite, CN=common-name.pg-ssltest.test
+   i:CN=Test CA for PostgreSQL SSL regression test server certs
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Jul 13 14:35:23 2023 GMT; NotAfter: Nov 28 14:35:23 2050 GMT
+---
+Server certificate
+[PEM block removed]
+subject=OU=PostgreSQL test suite, CN=common-name.pg-ssltest.test
+issuer=CN=Test CA for PostgreSQL SSL regression test server certs
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: rsa_pss_rsae_sha256
+Negotiated TLS1.3 group: X25519MLKEM768
+---
+SSL handshake has read 2422 bytes and written 1491 bytes
+Verification: OK
+Verified peername: common-name.pg-ssltest.test
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Protocol: TLSv1.3
+Server public key is 2048 bit
+This TLS version forbids renegotiation.
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+DONE
+
+[exit 0]

@@ -1,0 +1,125 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## configure (exit 0) (last 40 of 338 lines)
+checking for builtin __atomic int64 atomic operations... yes
+checking for __get_cpuid... yes
+checking for __get_cpuid_count... yes
+checking for __cpuidex... yes
+checking for AVX2 target attribute support... yes
+checking for _xgetbv... yes
+checking for _mm512_popcnt_epi64... yes
+checking for _mm_crc32_u8 and _mm_crc32_u32... yes
+checking for __crc32cb, __crc32ch, __crc32cw, and __crc32cd with CFLAGS=... no
+checking for __crc32cb, __crc32ch, __crc32cw, and __crc32cd with CFLAGS=-march=armv8-a+crc+simd... no
+checking for __crc32cb, __crc32ch, __crc32cw, and __crc32cd with CFLAGS=-march=armv8-a+crc... no
+checking for __builtin_loongarch_crcc_w_b_w, __builtin_loongarch_crcc_w_h_w, __builtin_loongarch_crcc_w_w_w and __builtin_loongarch_crcc_w_d_w... no
+checking which CRC-32C implementation to use... SSE 4.2 with runtime check
+checking for _mm512_clmulepi64_epi128... yes
+checking for vectorized CRC-32C... AVX-512 with runtime check
+checking which semaphore API to use... System V
+checking which random number source to use... OpenSSL
+checking for xmllint... /usr/bin/xmllint
+checking for xsltproc... /usr/bin/xsltproc
+checking for fop... no
+checking for dbtoepub... no
+checking whether gcc supports -Wl,-dead_strip_dylibs, for LDFLAGS... yes
+checking whether gcc supports -Wl,--export-dynamic, for LDFLAGS_EX_BE... no
+checking whether gcc supports -Wl,-export_dynamic, for LDFLAGS_EX_BE... yes
+configure: using compiler=Apple clang version 17.0.0 (clang-1700.6.3.2)
+configure: using CFLAGS=-Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition
+configure: using CPPFLAGS=-isysroot $(PG_SYSROOT) -I$HOME/work/shaar/deps/ossl30/include 
+configure: using LDFLAGS=-isysroot $(PG_SYSROOT) -L$HOME/work/shaar/deps/ossl30/lib  -Wl,-dead_strip_dylibs
+preparing build tree... done
+configure: creating ./config.status
+config.status: creating GNUmakefile
+config.status: creating src/Makefile.global
+config.status: creating src/include/pg_config.h
+config.status: creating src/interfaces/ecpg/include/ecpg_config.h
+config.status: linking $WORK/uncond-04/src-v30/src/backend/port/sysv_sema.c to src/backend/port/pg_sema.c
+config.status: linking $WORK/uncond-04/src-v30/src/backend/port/sysv_shmem.c to src/backend/port/pg_shmem.c
+config.status: linking $WORK/uncond-04/src-v30/src/include/port/darwin.h to src/include/pg_config_os.h
+config.status: linking $WORK/uncond-04/src-v30/src/makefiles/Makefile.darwin to src/Makefile.port
+
+[exit 0]
+## make (exit 0) (last 40 of 2115 lines)
+make[2]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C test/regress all
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition  -fvisibility=hidden -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o pg_regress_main.o $WORK/uncond-04/src-v30/src/test/regress/pg_regress_main.c
+make[3]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[3]: Nothing to be done for `all'.
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition  -fvisibility=hidden -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o regress.o $WORK/uncond-04/src-v30/src/test/regress/regress.c
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition  -fvisibility=hidden -I../../../src/port -I$WORK/uncond-04/src-v30/src/interfaces/libpq '-DHOST_TUPLE="x86_64-apple-darwin25.2.0"' '-DSHELLPROG="/bin/sh"' -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o pg_regress.o $WORK/uncond-04/src-v30/src/test/regress/pg_regress.c
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition  -fvisibility=hidden pg_regress.o pg_regress_main.o -L../../../src/interfaces/libpq -lpq -L../../../src/port -L../../../src/common  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -L$HOME/work/shaar/deps/ossl30/lib  -Wl,-dead_strip_dylibs   -lpgcommon -lpgport -lssl -lcrypto -lz -lm  -o pg_regress
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition  -fvisibility=hidden -bundle -o regress.dylib  regress.o -L../../../src/port -L../../../src/common  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -L$HOME/work/shaar/deps/ossl30/lib  -Wl,-dead_strip_dylibs   -fvisibility=hidden -bundle_loader ../../../src/backend/postgres
+/Library/Developer/CommandLineTools/usr/bin/make -C test/isolation all
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/interfaces/libpq all
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition -I. -I$WORK/uncond-04/src-v30/src/test/isolation -I$WORK/uncond-04/src-v30/src/interfaces/libpq -I$WORK/uncond-04/src-v30/src/test/isolation/../regress -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o isolationtester.o $WORK/uncond-04/src-v30/src/test/isolation/isolationtester.c
+/usr/bin/bison -d -o specparse.c $WORK/uncond-04/src-v30/src/test/isolation/specparse.y
+/usr/bin/flex   -o'specscanner.c' $WORK/uncond-04/src-v30/src/test/isolation/specscanner.l
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition -I. -I$WORK/uncond-04/src-v30/src/test/isolation -I$WORK/uncond-04/src-v30/src/interfaces/libpq -I$WORK/uncond-04/src-v30/src/test/isolation/../regress -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o isolation_main.o $WORK/uncond-04/src-v30/src/test/isolation/isolation_main.c
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/test/regress pg_regress.o
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+make[3]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[4]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[4]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[3]: Nothing to be done for `all'.
+make[4]: Nothing to be done for `all'.
+make[4]: Nothing to be done for `all'.
+rm -f pg_regress.o && ln -s ../../../src/test/regress/pg_regress.o .
+touch specparse.h
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition -I. -I$WORK/uncond-04/src-v30/src/test/isolation -I$WORK/uncond-04/src-v30/src/interfaces/libpq -I$WORK/uncond-04/src-v30/src/test/isolation/../regress -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o specparse.o specparse.c
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition -I. -I$WORK/uncond-04/src-v30/src/test/isolation -I$WORK/uncond-04/src-v30/src/interfaces/libpq -I$WORK/uncond-04/src-v30/src/test/isolation/../regress -I../../../src/include -I$WORK/uncond-04/src-v30/src/include -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -I$HOME/work/shaar/deps/ossl30/include      -c -o specscanner.o specscanner.c
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition isolation_main.o pg_regress.o -L../../../src/interfaces/libpq -lpq -L../../../src/port -L../../../src/common -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -L$HOME/work/shaar/deps/ossl30/lib  -Wl,-dead_strip_dylibs   -lpgcommon -lpgport -lssl -lcrypto -lz -lm  -o pg_isolation_regress
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Werror=vla -Werror=unguarded-availability-new -Wmissing-format-attribute -Wimplicit-fallthrough -Wcast-function-type -Wformat-security -Wmissing-variable-declarations -fno-strict-aliasing -fwrapv -fexcess-precision=standard -Wno-unused-command-line-argument -Wno-compound-token-split-by-macro -Wno-format-truncation -Wno-cast-function-type-strict -O2 -Wstrict-prototypes -Wold-style-definition isolationtester.o specparse.o specscanner.o -L../../../src/interfaces/libpq -lpq -L../../../src/port -L../../../src/common -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.2.sdk -L$HOME/work/shaar/deps/ossl30/lib  -Wl,-dead_strip_dylibs   -lpgcommon -lpgport -lssl -lcrypto -lz -lm  -o isolationtester
+/Library/Developer/CommandLineTools/usr/bin/make -C test/perl all
+make[2]: Nothing to be done for `all'.
+
+[exit 0]
+## install (exit 0) (last 40 of 874 lines)
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/share/postgresql/extension'
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/include/postgresql/server'
+/usr/bin/install -c -m 644 $WORK/uncond-04/src-v30/src/pl/plpgsql/src/plpgsql.control $WORK/uncond-04/src-v30/src/pl/plpgsql/src/plpgsql--1.0.sql '$WORK/uncond-04/prefix-v30/share/postgresql/extension/'
+/usr/bin/install -c -m 644 '$WORK/uncond-04/src-v30/src/pl/plpgsql/src/plpgsql.h' '$WORK/uncond-04/prefix-v30/include/postgresql/server'
+/Library/Developer/CommandLineTools/usr/bin/make -C makefiles install
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/makefiles'
+/usr/bin/install -c -m 644 $WORK/uncond-04/src-v30/src/makefiles/pgxs.mk '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/makefiles/'
+/Library/Developer/CommandLineTools/usr/bin/make -C test/regress install
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+make[3]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[3]: Nothing to be done for `all'.
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/test/regress'
+/usr/bin/install -c  pg_regress '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/test/regress/pg_regress'
+/Library/Developer/CommandLineTools/usr/bin/make -C test/isolation install
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/interfaces/libpq all
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+make[4]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[4]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/port all
+make[3]: Nothing to be done for `all'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../../../src/common all
+make[3]: Nothing to be done for `all'.
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/test/isolation'
+/usr/bin/install -c  pg_isolation_regress '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/test/isolation/pg_isolation_regress'
+/usr/bin/install -c  isolationtester '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/test/isolation/isolationtester'
+/Library/Developer/CommandLineTools/usr/bin/make -C test/perl install
+make[2]: Nothing to be done for `install'.
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src'
+/usr/bin/install -c -m 644 Makefile.global '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/Makefile.global'
+/usr/bin/install -c -m 644 Makefile.port '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/Makefile.port'
+/usr/bin/install -c -m 644 $WORK/uncond-04/src-v30/src/Makefile.shlib '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/Makefile.shlib'
+/usr/bin/install -c -m 644 $WORK/uncond-04/src-v30/src/nls-global.mk '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/src/nls-global.mk'
+/Library/Developer/CommandLineTools/usr/bin/make -C config install
+/bin/sh $WORK/uncond-04/src-v30/config/install-sh -c -d '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/config'
+/usr/bin/install -c -m 755 $WORK/uncond-04/src-v30/config/install-sh '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/config/install-sh'
+/usr/bin/install -c -m 755 $WORK/uncond-04/src-v30/config/missing '$WORK/uncond-04/prefix-v30/lib/postgresql/pgxs/config/missing'
+
+[exit 0]

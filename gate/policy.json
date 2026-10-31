@@ -1,5 +1,5 @@
 {
-  "schema": "shaar.gate.policy/1",
+  "schema": "shaar.gate.policy/2",
   "scope": "PostgreSQL server default TLS key-exchange groups (DEFAULT_SSL_GROUPS) on one tested macOS machine. Bounded case; not a general patch gate.",
   "upstream": {
     "commit": "68af68ac691f2b57d29524a191debed9b0bdd558",
@@ -43,9 +43,34 @@
   "cases": {
     "baseline": {"run_id_prefix": "baseline", "fixture": null},
     "hybrid-unconditional": {"run_id_prefix": "uncond", "fixture": "hybrid-unconditional"},
-    "hybrid-versioned": {"run_id_prefix": "versioned", "fixture": "hybrid-versioned"}
+    "hybrid-versioned": {"run_id_prefix": "versioned", "fixture": "hybrid-versioned"},
+    "candidate": {"run_id_prefix": "candidate", "fixture": null, "external_input": true}
   },
-  "run_id_pattern": "^(baseline|uncond|versioned)-[0-9]{2}$",
+  "run_id_pattern": "^(baseline|uncond|versioned|candidate)-[0-9]{2}$",
+  "external_input": {
+    "case": "candidate",
+    "meaning": "One explicit candidate patch supplied from outside the repository. It is validated by the same patch_policy as the fixtures and checked against the same matrix, controls and mandatory checks. It is not a fixture, and the gate makes no claim about who or what wrote it.",
+    "arguments": "--patch-file PATH --patch-sha256 HEX --origin ORIGIN [--derived-from FIXTURE] --reference-run BASELINE_RUN_ID",
+    "read": "The input must be a regular file (not a symlink, directory or special file) outside the repository, the work root, the PostgreSQL checkout and the protected cluster. It is opened once without following symlinks and at most max_patch_bytes + 1 bytes are read. Empty, oversize or digest-mismatched input is refused before any run directory is allocated.",
+    "snapshot": "candidate.patch",
+    "snapshot_rule": "The exact bytes read are written once to evidence/event/gate-runs/RUN_ID/candidate.patch (read-only) before preflight. Validation, application and the built source use only those bytes; the original path is not read again and is not recorded.",
+    "origins": {
+      "scripted": {
+        "run_id_pattern": "^candidate-9[0-9]$",
+        "derived_from": "required",
+        "meaning": "Scripted external-input control: an operator-made exact copy of a reviewed fixture, passed through the external input path. The input bytes must equal the named fixture's bytes. Not a model candidate and not a repair."
+      },
+      "external": {
+        "run_id_pattern": "^candidate-(0[1-9]|[1-8][0-9])$",
+        "derived_from": "forbidden",
+        "meaning": "Externally supplied input with no authorship claim by the gate. A claim that a model wrote it needs a separate linked record whose patch SHA-256 equals this run's input SHA-256; the gate does not make or verify that claim."
+      }
+    },
+    "reserved_run_ids": {"candidate-01": "first model-proposal experiment"},
+    "reference": "required: a baseline run recorded under the same gate identity; a reference under another identity is refused before the run starts",
+    "binding": "observations.json carries an input block (snapshot, sha256, bytes, origin, derived_from). evaluate() re-reads the snapshot and requires it to agree with the input block, the patch receipt, the origin rules, the current fixture hashes for scripted input, the per-arm patched-file hashes in the source receipt, and the reference verdict file. Any disagreement makes the patch check BLOCKED.",
+    "identity": "Candidate bytes are bound to the run, not to the gate identity. The gate identity covers gate/check.py, gate/policy.json and the two fixtures only, so different candidates run under the same identity."
+  },
   "matrix": {
     "newer": {"label": "OpenSSL >= 3.5", "min_version": [3, 5, 0], "max_version_exclusive": [4, 0, 0], "server_port": 55401},
     "v30": {"label": "OpenSSL 3.0.x", "min_version": [3, 0, 0], "max_version_exclusive": [3, 1, 0], "server_port": 55402}
@@ -120,6 +145,9 @@
     "4. REJECT if any check FAILs in an arm whose identity is not BLOCKED.",
     "5. BLOCKED if any mandatory check is BLOCKED or NOT_RUN.",
     "6. ACCEPT only if every mandatory check is PASS.",
-    "Attribution: build or regression failure counts as FAIL only when a reference baseline run with the same gate identity passed that check in the same arm; otherwise BLOCKED. Startup failure counts as FAIL when the server log shows the ssl_groups configuration error or the reference passed startup in that arm; otherwise BLOCKED. Handshake: wrong group, unexpected failure or unexpected success is FAIL; unclassifiable client output is BLOCKED. Downstream checks after a build or startup failure are NOT_RUN. A receipt whose log is missing, whose log hash differs, or whose fields disagree with its re-parsed log is BLOCKED."
+    "Attribution: build or regression failure counts as FAIL only when a reference baseline run with the same gate identity passed that check in the same arm; otherwise BLOCKED. Startup failure counts as FAIL when the server log shows the ssl_groups configuration error or the reference passed startup in that arm; otherwise BLOCKED. Handshake: wrong group, unexpected failure or unexpected success is FAIL; unclassifiable client output is BLOCKED. Downstream checks after a build or startup failure are NOT_RUN. A receipt whose log is missing, whose log hash differs, or whose fields disagree with its re-parsed log is BLOCKED.",
+    "Reference: a reference run counts for attribution only if it is a baseline under the same gate identity and its verdict file still has the recorded SHA-256 and arm results.",
+    "Source binding: when the source receipt records per-arm patched-file hashes, each must equal the validated result (the patch receipt's patched_sha256, or the pinned header hash for baseline); otherwise source is BLOCKED. For case candidate the hashes are required.",
+    "Candidate binding (case candidate only): a missing or altered snapshot, a digest, size, origin or derived_from disagreement, an origin not allowed for the run ID, a fixture claim, a snapshot that does not re-parse while the receipt says PASS, or a missing, altered or other-identity reference makes patch BLOCKED."
   ]
 }

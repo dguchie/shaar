@@ -7,9 +7,9 @@ AI agents propose patches to infrastructure software; a deterministic gate, with
 > **Current status (event work in progress):** the repository now also contains event-built code:
 > - a capability probe of the hosted model API, with its evidence;
 > - a minimal recording CLI, `shaar.py`, that records one locally validated model reply for a synthetic task;
-> - a deterministic gate, `gate/check.py`, for one bounded case: PostgreSQL's default TLS key-exchange groups, checked against OpenSSL 3.6.3 and OpenSSL 3.0.22 on one Mac.
+> - a deterministic gate, `gate/check.py`, for one bounded case: PostgreSQL's default TLS key-exchange groups, checked against OpenSSL 3.6.3 and OpenSSL 3.0.22 on one Mac. Besides its hand-written fixtures it accepts one explicit external candidate patch (`--case candidate`), whose exact bytes and SHA-256 are bound to the run's evidence.
 >
-> Measured gate verdicts: the unmodified PostgreSQL source is REJECT, a hand-written hybrid-only default is REJECT (the server does not start with OpenSSL 3.0), and a hand-written version-aware default is ACCEPT. That ACCEPT verified hybrid post-quantum key exchange (X25519MLKEM768) for the tested configurations; authentication remains classical. **No model-proposed patch has been gated yet, and replay and artifact verification are not implemented.** See [docs/GATE_STATUS.md](docs/GATE_STATUS.md) and [docs/CLI_STATUS.md](docs/CLI_STATUS.md).
+> Measured gate verdicts: the unmodified PostgreSQL source is REJECT, a hand-written hybrid-first default without library-version awareness is REJECT (the server does not start with OpenSSL 3.0), and a hand-written version-aware default is ACCEPT. That ACCEPT verified hybrid post-quantum key exchange (X25519MLKEM768) for the tested configurations; authentication remains classical. The external input was exercised as `candidate-90`: a scripted, exact copy of the version-aware fixture, with 21/21 PASS and a matching technical comparison; **it was not a model proposal or repair**. **No model-proposed patch has been gated yet, and replay and artifact verification are not implemented.** See [docs/GATE_STATUS.md](docs/GATE_STATUS.md) and [docs/CLI_STATUS.md](docs/CLI_STATUS.md).
 
 ## Provenance
 

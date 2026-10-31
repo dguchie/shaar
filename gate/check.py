@@ -4,13 +4,23 @@
 Scope: one PostgreSQL source pin, one header location (DEFAULT_SSL_GROUPS),
 two OpenSSL library arms on one macOS machine. Python standard library only.
 The harness owns patch validation, application, checks and verdicts. It runs
-reviewed literal fixtures only; it is not a sandbox for arbitrary patches.
+the reviewed literal fixtures, or one explicit external candidate patch
+(case "candidate") whose exact bytes are snapshotted into the run's evidence.
+It is not a sandbox: a candidate's build runs with the user's privileges.
 
 Commands:
-  selftest          offline checks: patch policy, client-output parser, verdict logic
+  selftest          offline checks: patch policy, client-output parser, verdict logic,
+                    external-input contract
+  identity          print the gate files' SHA-256 and the gate identity
   run               build, test and observe one case; writes evidence for that run
   evaluate          recompute a run's verdict from its observations and logs
-  negative-control  show that a missing or edited required receipt prevents ACCEPT
+  negative-control  show that missing or edited evidence prevents ACCEPT
+
+External candidate (all of these are required for --case candidate and refused
+for the other cases):
+  run --case candidate --run-id candidate-NN --patch-file PATH --patch-sha256 HEX
+      --origin {scripted,external} [--derived-from FIXTURE] --reference-run baseline-NN
+      plus the usual environment arguments.
 """
 import argparse
 import datetime
@@ -21,8 +31,10 @@ import os
 import re
 import shlex
 import signal
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 
 GATE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -83,6 +95,255 @@ def write_new(path, data, mode=0o644):
 def version_tuple(text):
     m = re.match(r"^(\d+)\.(\d+)\.(\d+)", text or "")
     return tuple(int(x) for x in m.groups()) if m else None
+
+
+def full(pattern, text):
+    """Whole-string match ('$' alone would also accept a trailing newline)."""
+    return isinstance(text, str) and re.fullmatch(pattern, text) is not None
+
+
+def inside(path, root):
+    """True if real path `path` is `root` or below it (both already realpath'd)."""
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
+# ---------------------------------------------------------------- external candidate input
+
+HEX64 = re.compile(r"[0-9a-f]{64}")
+
+
+class InputError(Exception):
+    pass
+
+
+def fixture_hashes(gate_files, policy):
+    """Fixture name -> SHA-256, taken from the gate files hashed for the identity."""
+    return {name: gate_files.get(meta["path"]) for name, meta in policy["fixtures"].items()}
+
+
+def check_run_args(a, policy):
+    """Argument contract for `run`. Returns an error string or None. No I/O."""
+    cases = policy["cases"]
+    if a.case not in cases:
+        return "unknown case %r" % a.case
+    case = cases[a.case]
+    if not full(policy["run_id_pattern"], a.run_id) or a.run_id.split("-")[0] != case["run_id_prefix"]:
+        return "run id must match %s with prefix %s" % (policy["run_id_pattern"], case["run_id_prefix"])
+    ext = [n for n in ("patch_file", "patch_sha256", "origin", "derived_from") if getattr(a, n, None) is not None]
+    if not case.get("external_input"):
+        if ext:
+            return "--%s applies only to --case %s" % (ext[0].replace("_", "-"), policy["external_input"]["case"])
+        if a.case == "baseline" and a.reference_run:
+            return "baseline runs take no reference"
+        return None
+    xi = policy["external_input"]
+    if not a.patch_file:
+        return "--patch-file is required for --case candidate"
+    if a.patch_sha256 is None or not HEX64.fullmatch(a.patch_sha256):
+        return "--patch-sha256 is required: 64 lowercase hex characters"
+    if a.origin not in xi["origins"]:
+        return "--origin must be one of %s" % sorted(xi["origins"])
+    rule = xi["origins"][a.origin]
+    if not full(rule["run_id_pattern"], a.run_id):
+        return "origin %s requires a run id matching %s" % (a.origin, rule["run_id_pattern"])
+    if rule["derived_from"] == "required":
+        if a.derived_from not in policy["fixtures"]:
+            return "origin %s requires --derived-from naming a fixture %s" % (a.origin, sorted(policy["fixtures"]))
+    elif a.derived_from is not None:
+        return "--derived-from is not allowed with origin %s" % a.origin
+    if not a.reference_run:
+        return "--reference-run (a baseline under the same gate identity) is required for --case candidate"
+    return None
+
+
+def read_input_once(path, limit):
+    """Open a regular file once without following a final symlink; read at most limit + 1 bytes."""
+    try:
+        st = os.lstat(path)
+    except OSError as e:
+        raise InputError("candidate input not readable: %s" % e.strerror)
+    if stat.S_ISLNK(st.st_mode):
+        raise InputError("candidate input is a symlink")
+    if not stat.S_ISREG(st.st_mode):
+        raise InputError("candidate input is not a regular file")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    try:
+        fd = os.open(path, flags)
+    except OSError as e:
+        raise InputError("candidate input not readable: %s" % e.strerror)
+    try:
+        fst = os.fstat(fd)
+        if not stat.S_ISREG(fst.st_mode) or (fst.st_dev, fst.st_ino) != (st.st_dev, st.st_ino):
+            raise InputError("candidate input changed type or identity while opening")
+        chunks, n = [], 0
+        while n <= limit:
+            b = os.read(fd, limit + 1 - n)
+            if not b:
+                break
+            chunks.append(b)
+            n += len(b)
+    finally:
+        os.close(fd)
+    data = b"".join(chunks)
+    if len(data) > limit:
+        raise InputError("candidate input larger than %d bytes" % limit)
+    if not data:
+        raise InputError("candidate input is empty")
+    return data
+
+
+def prepare_candidate(a, policy, gate_files, protected_roots):
+    """Validate location, read once, check the digest and origin. Returns a frozen input dict."""
+    real = os.path.realpath(a.patch_file)
+    for root in protected_roots:
+        if inside(real, root):
+            raise InputError("candidate input lies inside a protected, work or repository path")
+    data = read_input_once(a.patch_file, policy["patch_policy"]["max_patch_bytes"])
+    digest = sha256_bytes(data)
+    if digest != a.patch_sha256:
+        raise InputError("candidate input SHA-256 %s differs from --patch-sha256" % digest)
+    if a.derived_from is not None and fixture_hashes(gate_files, policy).get(a.derived_from) != digest:
+        raise InputError("origin scripted: input bytes differ from fixture %s" % a.derived_from)
+    return {"bytes": data, "info": {"snapshot": policy["external_input"]["snapshot"], "sha256": digest,
+                                    "bytes": len(data), "origin": a.origin, "derived_from": a.derived_from}}
+
+
+PINNED_HEADER = "src/include/libpq/libpq.h"
+
+# A different, policy-valid patch (classical groups replaced by "none"). Used only by the
+# negative control and the self-test to substitute a run's snapshot; never applied to a build.
+SUBSTITUTE_PATCH = (
+    b"--- a/src/include/libpq/libpq.h\n+++ b/src/include/libpq/libpq.h\n@@ -135,7 +135,7 @@\n"
+    b" #endif\n \n #ifdef USE_SSL\n-#define DEFAULT_SSL_GROUPS \"X25519:prime256v1\"\n"
+    b"+#define DEFAULT_SSL_GROUPS \"none\"\n #else\n #define DEFAULT_SSL_GROUPS \"none\"\n #endif\n")
+
+
+def load_pinned_header(pg_git, policy):
+    """The pinned header from a PostgreSQL checkout, only if its SHA-256 equals the policy's."""
+    if not pg_git:
+        return None
+    try:
+        p = subprocess.run(["git", "-C", pg_git, "show", "%s:%s" % (policy["upstream"]["commit"], PINNED_HEADER)],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60,
+                           env={"PATH": CHILD_PATH, "GIT_OPTIONAL_LOCKS": "0", "HOME": os.path.expanduser("~")})
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if p.returncode != 0 or sha256_bytes(p.stdout) != policy["patch_policy"]["allowed_files"][PINNED_HEADER]["sha256"]:
+        return None
+    try:
+        return p.stdout.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
+def reapply_problems(snap, receipts, policy, pinned_header):
+    """Re-apply the saved snapshot to the authenticated pinned header and bind the result to the
+    patch receipt and to the header recorded in each arm's source export."""
+    r = receipts.get("patch")
+    if snap is None or not isinstance(r, dict) or r.get("status") not in ("pass", "fail"):
+        return []
+    want_hdr = policy["patch_policy"]["allowed_files"][PINNED_HEADER]["sha256"]
+    if not isinstance(pinned_header, str) or sha256_bytes(pinned_header.encode("utf-8")) != want_hdr:
+        return ["pinned header not available or not authenticated, so the snapshot cannot be re-applied "
+                "(evaluate needs --pg-git)"]
+    try:
+        _p, patched, _d = validate_and_apply(snap, pinned_header, policy)
+        result, err = sha256_bytes(patched.encode("utf-8")), None
+    except PatchError as e:
+        result, err = None, str(e)
+    if r["status"] == "fail":
+        return ["re-applied snapshot passes the policy while the patch receipt says FAIL"] if result else []
+    if result is None:
+        return ["re-applied snapshot is rejected by the policy (%s) while the patch receipt says PASS" % err]
+    probs = []
+    if r.get("patched_sha256") != result:
+        probs.append("re-applied snapshot result %s differs from the patch receipt" % result[:16])
+    src = receipts.get("source")
+    if isinstance(src, dict) and src.get("status") == "pass":
+        got = src.get("patched_file_sha256")
+        if not isinstance(got, dict) or sorted(got) != sorted(ARMS):
+            probs.append("source receipt has no per-arm exported-header hashes")
+        else:
+            probs += ["%s arm exported header differs from the re-applied snapshot result" % a
+                      for a in ARMS if got[a] != result]
+    return probs
+
+
+def candidate_binding(obs, policy, read_log, fixture_sha, read_ref, pinned_header=None):
+    """Problems binding a run's patch evidence to its saved input. Empty list = consistent."""
+    probs = []
+    case = obs.get("case")
+    is_cand = bool(policy["cases"].get(case, {}).get("external_input"))
+    inp = obs.get("input")
+    if not is_cand:
+        return ["input block present for a non-candidate case"] if inp is not None else []
+    xi = policy["external_input"]
+    if not isinstance(inp, dict):
+        return ["input block missing"]
+    origin, derived, sha = inp.get("origin"), inp.get("derived_from"), inp.get("sha256")
+    if inp.get("snapshot") != xi["snapshot"]:
+        probs.append("snapshot name is not %s" % xi["snapshot"])
+    if not isinstance(sha, str) or not HEX64.fullmatch(sha):
+        probs.append("input sha256 malformed")
+    rule = xi["origins"].get(origin)
+    if rule is None:
+        probs.append("origin %r not allowed by policy" % origin)
+    else:
+        if not full(rule["run_id_pattern"], obs.get("run_id")):
+            probs.append("origin %s not allowed for run id %s" % (origin, obs.get("run_id")))
+        if rule["derived_from"] == "required":
+            if derived not in policy["fixtures"]:
+                probs.append("origin %s without a fixture in derived_from" % origin)
+            elif fixture_sha is None or fixture_sha.get(derived) != sha:
+                probs.append("input does not equal the bytes of fixture %s" % derived)
+        elif derived is not None:
+            probs.append("derived_from set for origin %s" % origin)
+    snap = read_log(xi["snapshot"])
+    if snap is None:
+        probs.append("snapshot %s missing" % xi["snapshot"])
+    else:
+        if sha256_bytes(snap) != sha:
+            probs.append("snapshot SHA-256 differs from the input block")
+        if len(snap) != inp.get("bytes") or len(snap) > policy["patch_policy"]["max_patch_bytes"]:
+            probs.append("snapshot size differs from the input block or the limit")
+    r = (obs.get("receipts") or {}).get("patch")
+    if isinstance(r, dict) and r.get("status") in ("pass", "fail"):
+        if r.get("fixture") is not None:
+            probs.append("patch receipt claims fixture %r for an external input" % r.get("fixture"))
+        for k, v in (("input_origin", origin), ("derived_from", derived), ("patch_sha256", sha),
+                     ("snapshot_sha256", sha)):
+            if r.get(k) != v:
+                probs.append("patch receipt %s disagrees with the input block" % k)
+        if r.get("status") == "pass":
+            if not isinstance(r.get("patched_sha256"), str) or not HEX64.fullmatch(r["patched_sha256"]):
+                probs.append("patch receipt has no patched_sha256")
+    probs += reapply_problems(snap, obs.get("receipts") or {}, policy, pinned_header)
+    ref = obs.get("reference")
+    if not isinstance(ref, dict):
+        probs.append("reference run missing")
+    else:
+        if ref.get("gate_identity") != obs.get("gate_identity"):
+            probs.append("reference gate identity differs from the run's")
+        probs += reference_problems(ref, read_ref)
+    return probs
+
+
+def reference_problems(ref, read_ref):
+    """Re-read the reference verdict and compare with the copy in the observations."""
+    if read_ref is None:
+        return ["reference verdict not checkable"]
+    rid = ref.get("run_id")
+    if not full(r"baseline-[0-9]{2}", rid):
+        return ["reference run id %r is not a baseline id" % rid]
+    raw = read_ref(rid)
+    if raw is None:
+        return ["reference verdict %s missing" % rid]
+    derived = reference_from_raw(rid, raw)
+    if derived is None:
+        return ["reference verdict %s unreadable or not a baseline" % rid]
+    if derived != ref:
+        return ["reference verdict %s differs from the recorded reference" % rid]
+    return []
 
 
 # ---------------------------------------------------------------- patch policy
@@ -304,16 +565,41 @@ def judge(parsed, expect):
 RES = {"pass": "PASS", "fail": "FAIL", "blocked": "BLOCKED", "not_run": "NOT_RUN"}
 
 
+def source_binding(src, patch, policy, case):
+    """The per-arm file written into each export must be the validated result."""
+    got = src.get("patched_file_sha256")
+    external = bool(policy["cases"].get(case, {}).get("external_input"))
+    if got is None and not external:
+        return []  # older receipts do not carry the field
+    if not isinstance(got, dict) or sorted(got) != sorted(ARMS):
+        return ["per-arm patched-file hashes missing"]
+    if case == "baseline":
+        want = policy["patch_policy"]["allowed_files"]["src/include/libpq/libpq.h"]["sha256"]
+    else:
+        want = patch.get("patched_sha256") if isinstance(patch, dict) else None
+    if not want:
+        return ["no validated result to compare with"]
+    return ["%s arm file differs from the validated result" % a for a in ARMS if got[a] != want]
+
+
 def mandatory_ids(policy):
     mc = policy["mandatory_checks"]
     return list(mc["global"]) + ["%s.%s" % (a, c) for a in ARMS for c in mc["per_arm"]]
 
 
-def evaluate(obs, policy, read_log):
-    """Derive the verdict from observations, logs and policy only."""
+def evaluate(obs, policy, read_log, fixture_sha=None, read_ref=None, pinned_header=None):
+    """Derive the verdict from observations, logs and policy only.
+
+    fixture_sha: fixture name -> SHA-256 of the current fixture files (scripted-input binding).
+    read_ref: run id -> raw verdict.json bytes of a reference run, or None.
+    pinned_header: text of the pinned libpq.h (authenticated by SHA-256 here); a candidate's
+    snapshot is re-applied to it. Without it a candidate cannot be ACCEPT.
+    """
     rec = obs.get("receipts") if isinstance(obs.get("receipts"), dict) else {}
     case = obs.get("case")
     ref = obs.get("reference")
+    ref_ok = not (isinstance(ref, dict) and read_ref is not None and reference_problems(ref, read_ref))
+    binding = candidate_binding(obs, policy, read_log, fixture_sha, read_ref, pinned_header)
 
     def load(rid):
         r = rec.get(rid)
@@ -329,7 +615,7 @@ def evaluate(obs, policy, read_log):
         return r, data, None
 
     def ref_pass(arm, chk):
-        return (case != "baseline" and isinstance(ref, dict)
+        return (case != "baseline" and isinstance(ref, dict) and ref_ok
                 and ref.get("gate_identity") == obs.get("gate_identity")
                 and ref.get("arm_results", {}).get(arm, {}).get(chk) == "PASS")
 
@@ -363,6 +649,9 @@ def evaluate(obs, policy, read_log):
                         "; ".join(notes) or "all reference controls matched")
             continue
         r, _d, err = load(rid)
+        if rid == "patch" and binding:
+            out[rid] = ("BLOCKED", "evidence", [rid, "input"], "candidate binding: " + "; ".join(binding))
+            continue
         if err:
             out[rid] = ("BLOCKED", "evidence", [rid], err)
             continue
@@ -373,6 +662,11 @@ def evaluate(obs, policy, read_log):
             attr = "environment"
             if res == "FAIL":
                 res = "BLOCKED"
+        if rid == "source" and res == "PASS":
+            sp = source_binding(r, rec.get("patch"), policy, case)
+            if sp:
+                out[rid] = ("BLOCKED", "evidence", [rid, "patch"], "source binding: " + "; ".join(sp))
+                continue
         out[rid] = (res, attr, [rid], r.get("detail", ""))
 
     for arm in ARMS:
@@ -850,12 +1144,56 @@ def stage_controls(ctx):
     return ok
 
 
+def stage_patch_candidate(ctx, original):
+    """External input: validate and apply the snapshot bytes written at run start."""
+    pol = ctx.policy
+    info = ctx.candidate["info"]
+    fields = {"fixture": None, "input_origin": info["origin"], "derived_from": info["derived_from"],
+              "patch_sha256": info["sha256"], "snapshot": info["snapshot"]}
+    ctx.patch_info = dict(info, kind="external")
+    try:
+        with open(os.path.join(ctx.ev_dir, info["snapshot"]), "rb") as f:
+            raw = f.read(pol["patch_policy"]["max_patch_bytes"] + 1)
+    except OSError as e:
+        raw = None
+        why = "snapshot not readable: %s" % e.strerror
+    if raw is not None and (raw != ctx.candidate["bytes"] or sha256_bytes(raw) != info["sha256"]):
+        why, raw = "snapshot differs from the bytes read at run start", None
+    if raw is None:
+        log = publish_log(ctx, "logs/patch.txt", [("patch input", why, None)])
+        receipt(ctx, "patch", "blocked", why, log, **fields)
+        return False
+    fields["snapshot_sha256"] = sha256_bytes(raw)
+    origin_line = "external input (origin %s%s), snapshot %s, %d bytes, SHA-256 %s" % (
+        info["origin"], ", exact copy of fixture %s" % info["derived_from"] if info["derived_from"] else "",
+        info["snapshot"], len(raw), info["sha256"])
+    try:
+        tpath, patched, diff = validate_and_apply(raw, original, pol)
+    except PatchError as e:
+        log = publish_log(ctx, "logs/patch.txt", [("patch input", origin_line, None),
+                                                  ("patch validation", "REJECTED: %s" % e, None)])
+        receipt(ctx, "patch", "fail", "patch rejected by policy: %s" % e, log, **fields)
+        return False
+    ctx.patched = (tpath, patched)
+    log = publish_log(ctx, "logs/patch.txt", [
+        ("patch input", origin_line, None),
+        ("patch validation", "snapshot validated: single allowed file, edits within lines %s, "
+         "added lines match policy patterns, exact context, no change outside region" % (
+             pol["patch_policy"]["allowed_files"][tpath]["editable_lines"]), None),
+        ("resulting source diff (harness-computed)", "\n".join(diff), None)])
+    receipt(ctx, "patch", "pass", "external input (origin %s) validated and applied in memory" % info["origin"],
+            log, patched_sha256=sha256_bytes(patched.encode("utf-8")), **fields)
+    return True
+
+
 def stage_patch(ctx):
     pol = ctx.policy
     fixture = pol["cases"][ctx.case]["fixture"]
     path = "src/include/libpq/libpq.h"
     original = git_blob(ctx, "%s:%s" % (pol["upstream"]["commit"], path)).decode("utf-8")
     ctx.patch_info = None
+    if pol["cases"][ctx.case].get("external_input"):
+        return stage_patch_candidate(ctx, original)
     if fixture is None:
         ctx.patched = None
         log = publish_log(ctx, "logs/patch.txt", [("patch", "case baseline: no patch applied", None)])
@@ -888,7 +1226,7 @@ def stage_source(ctx):
     pol = ctx.policy
     pin = pol["upstream"]["commit"]
     rel = "src/include/libpq/libpq.h"
-    lines, problems, facts = [], [], {}
+    lines, problems, facts, written = [], [], {}, {}
     for arm in ARMS:
         src = os.path.join(ctx.run_dir, "src-" + arm)
         os.makedirs(src)
@@ -913,6 +1251,7 @@ def stage_source(ctx):
             with open(target, "wb") as f:
                 f.write(ctx.patched[1].encode("utf-8"))
         after = tree_manifest(src)
+        written[arm] = sha256_file(target)
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
         expected = [rel] if ctx.patched is not None else []
         if changed != expected:
@@ -927,12 +1266,18 @@ def stage_source(ctx):
         problems.append("the two exports differ")
     rc, out, _ = capture(ctx, ["git", "-C", ctx.pg_git, "rev-parse", pin + "^{tree}"])
     facts["tree"] = out.strip()
+    want = (sha256_bytes(ctx.patched[1].encode("utf-8")) if ctx.patched is not None
+            else pol["patch_policy"]["allowed_files"][rel]["sha256"])
+    for arm, h in sorted(written.items()):
+        lines.append("%s: %s SHA-256 after writing %s" % (arm, rel, h))
+        if h != want:
+            problems.append("%s: %s after writing differs from the validated result" % (arm, rel))
     ctx.env_facts["source"] = facts
     log = publish_log(ctx, "logs/source.txt", [("fresh exports per arm", "\n".join(
         lines + ["problems: %s" % (problems or "none")]), None)])
     receipt(ctx, "source", "fail" if problems else "pass",
             "; ".join(problems) or "fresh export per arm; only the allowed file differs from the pin",
-            log)
+            log, patched_file_sha256=written if len(written) == len(ARMS) else None)
     return not problems
 
 
@@ -1164,23 +1509,38 @@ def stage_integrity(ctx):
             "; ".join(problems) or "gate, policy, client, libraries and protected tree unchanged", log)
 
 
-def load_reference(ctx, ref_id):
-    d = os.path.join(EVIDENCE_ROOT, ref_id)
+def reference_from_raw(ref_id, raw):
     try:
-        with open(os.path.join(d, "verdict.json"), "rb") as f:
-            raw = f.read()
         v = json.loads(raw.decode("utf-8"))
-    except (OSError, ValueError):
+    except (ValueError, UnicodeDecodeError):
         return None
-    if v.get("case") != "baseline":
+    if not isinstance(v, dict) or v.get("case") != "baseline" or v.get("run_id") != ref_id:
         return None
     arm_results = {a: {} for a in ARMS}
     for c in v.get("checks", []):
+        if not isinstance(c, dict) or not isinstance(c.get("id"), str):
+            return None
         parts = c["id"].split(".")
         if len(parts) == 2 and parts[0] in ARMS and parts[1] in ("build", "regression", "startup"):
-            arm_results[parts[0]][parts[1]] = c["result"]
+            arm_results[parts[0]][parts[1]] = c.get("result")
     return {"run_id": ref_id, "verdict_sha256": sha256_bytes(raw),
             "gate_identity": v.get("gate_identity"), "arm_results": arm_results}
+
+
+def read_reference_raw(ref_id):
+    """Raw verdict.json of a baseline run under EVIDENCE_ROOT, or None. Refuses non-baseline ids."""
+    if not full(r"baseline-[0-9]{2}", ref_id):
+        return None
+    try:
+        with open(os.path.join(EVIDENCE_ROOT, ref_id, "verdict.json"), "rb") as f:
+            return f.read()
+    except OSError:
+        return None
+
+
+def load_reference(ctx, ref_id):
+    raw = read_reference_raw(ref_id)
+    return None if raw is None else reference_from_raw(ref_id, raw)
 
 
 def finalize(ctx):
@@ -1193,6 +1553,9 @@ def finalize(ctx):
             receipt(ctx, "control." + c["id"], "not_run", "not run: " + ctx.stop_reason)
     obs = {"schema": "shaar.gate.observations/1", "run_id": ctx.run_id, "case": ctx.case,
            "gate_identity": ctx.gate_identity, "reference": ctx.reference, "receipts": ctx.receipts}
+    if ctx.candidate is not None:
+        obs["schema"] = "shaar.gate.observations/2"
+        obs["input"] = ctx.candidate["info"]
 
     def read_log(rel):
         p = os.path.join(ctx.ev_dir, rel)
@@ -1201,7 +1564,8 @@ def finalize(ctx):
                 return f.read()
         except OSError:
             return None
-    ev = evaluate(obs, pol, read_log)
+    ev = evaluate(obs, pol, read_log, fixture_hashes(ctx.gate_files, pol), read_reference_raw,
+                  load_pinned_header(ctx.pg_git, pol) if ctx.candidate is not None else None)
     gate_files, _ = gate_hashes()
     verdict = build_verdict(ctx.run_id, ctx.case, ctx.gate_identity, ctx.gate_files, pol,
                             ctx.patch_info, ctx.reference, ev)
@@ -1234,25 +1598,28 @@ def build_verdict(run_id, case, gate_identity, gate_files, pol, patch_info, refe
         claim = ("Hybrid post-quantum key exchange (X25519MLKEM768) verified for the tested "
                  "configurations on this machine; classical fallback and OpenSSL 3.0 classical "
                  "compatibility observed. Server authentication remains classical (RSA test certificate).")
-    return {"schema": "shaar.gate.verdict/1", "run_id": run_id, "case": case,
+    schema, patch = "shaar.gate.verdict/1", None
+    if patch_info is not None and patch_info.get("kind") == "external":
+        schema = "shaar.gate.verdict/2"
+        patch = {"fixture": None, "sha256": patch_info["sha256"],
+                 "input": {k: patch_info[k] for k in ("origin", "derived_from", "snapshot", "bytes")}}
+    elif patch_info is not None:
+        patch = {"fixture": patch_info["fixture"], "sha256": patch_info["sha256"]}
+    return {"schema": schema, "run_id": run_id, "case": case,
             "outcome": ev["outcome"], "reason": ev["reason"], "checks": ev["checks"],
             "counts": ev["counts"], "gate_identity": gate_identity, "gate_files": gate_files,
             "policy_sha256": gate_files["gate/policy.json"],
             "upstream_commit": pol["upstream"]["commit"],
-            "patch": None if patch_info is None else {"fixture": patch_info["fixture"],
-                                                      "sha256": patch_info["sha256"]},
+            "patch": patch,
             "reference_run": reference, "claim": claim,
             "decided_by": "gate/check.py evaluate() from receipts, logs and policy; no model involved"}
 
 
 def cmd_run(args):
     pol = load_policy()
-    if args.case not in pol["cases"]:
-        sys.exit("unknown case")
-    if not re.match(pol["run_id_pattern"], args.run_id) or \
-            args.run_id.split("-")[0] != pol["cases"][args.case]["run_id_prefix"]:
-        sys.exit("run id must match %s with prefix %s" % (pol["run_id_pattern"],
-                                                         pol["cases"][args.case]["run_id_prefix"]))
+    err = check_run_args(args, pol)
+    if err:
+        sys.exit("refused before any work: " + err)
     dy = sorted(k for k in os.environ if k.startswith("DYLD_"))
     if dy:
         sys.exit("refusing to run with DYLD_* variables set: %s" % dy)
@@ -1267,7 +1634,9 @@ def cmd_run(args):
     for p in [work_root, ctx.pg_git] + list(ctx.prefixes.values()):
         if not SAFE_PATH.match(p):
             sys.exit("path has unsupported characters: %s" % p)
-    for protected in (ctx.pg_git, os.path.realpath(args.protected_pgdata), REPO):
+    pgdata = os.path.realpath(args.protected_pgdata)
+    repo_real = os.path.realpath(REPO)
+    for protected in (ctx.pg_git, pgdata, repo_real):
         if work_root == protected or work_root.startswith(protected + os.sep) or \
                 protected.startswith(work_root + os.sep):
             sys.exit("work root overlaps a protected or repository path")
@@ -1275,25 +1644,41 @@ def cmd_run(args):
     ctx.ev_dir = os.path.join(EVIDENCE_ROOT, args.run_id)
     if os.path.lexists(ctx.run_dir) or os.path.lexists(ctx.ev_dir):
         sys.exit("refusing to reuse run id %s (work or evidence directory exists)" % args.run_id)
+    ctx.gate_files, ctx.gate_identity = gate_hashes()
     ctx.reference = None
     if args.reference_run:
-        if args.case == "baseline":
-            sys.exit("baseline runs take no reference")
         ctx.reference = load_reference(ctx, args.reference_run)
         if ctx.reference is None:
             sys.exit("reference run %s not found or not a baseline verdict" % args.reference_run)
-    ctx.gate_files, ctx.gate_identity = gate_hashes()
+        if ctx.reference["gate_identity"] != ctx.gate_identity:
+            sys.exit("reference run %s has gate identity %s; this gate is %s. A reference must be a "
+                     "baseline under the same identity." % (args.reference_run, ctx.reference["gate_identity"],
+                                                            ctx.gate_identity))
+    ctx.candidate = None
+    if pol["cases"][args.case].get("external_input"):
+        try:
+            ctx.candidate = prepare_candidate(args, pol, ctx.gate_files,
+                                              [repo_real, work_root, ctx.pg_git, pgdata])
+        except InputError as e:
+            sys.exit("refused before any work: %s" % e)
+        print("candidate input: %d bytes, SHA-256 %s, origin %s%s" % (
+            ctx.candidate["info"]["bytes"], ctx.candidate["info"]["sha256"], args.origin,
+            " (exact copy of fixture %s)" % args.derived_from if args.derived_from else ""))
     os.makedirs(work_root, mode=0o700, exist_ok=True)
     os.mkdir(ctx.run_dir, 0o700)
     for sub in ("tmp", "sock", "private-logs"):
         os.mkdir(os.path.join(ctx.run_dir, sub), 0o700)
     os.makedirs(os.path.join(ctx.ev_dir, "logs"))
+    if ctx.candidate is not None:
+        write_new(os.path.join(ctx.ev_dir, ctx.candidate["info"]["snapshot"]), ctx.candidate["bytes"], 0o444)
     ctx.tmp, ctx.sock = os.path.join(ctx.run_dir, "tmp"), os.path.join(ctx.run_dir, "sock")
     ctx.priv = os.path.join(ctx.run_dir, "private-logs")
     ctx.redactions = sorted({(ctx.run_dir, "$WORK/" + args.run_id), (work_root, "$WORK"),
                              (REPO, "$REPO"), (ctx.home, "$HOME")}, key=lambda x: -len(x[0]))
     ctx.receipts, ctx.steps, ctx.processes, ctx.env_facts = {}, [], [], {}
     ctx.arm, ctx.patch_info, ctx.patched = {}, None, None
+    if ctx.candidate is not None:
+        ctx.patch_info = dict(ctx.candidate["info"], kind="external")
     ctx.jobs = args.jobs or os.cpu_count() or 4
     ctx.t0, ctx.started, ctx.stop_reason = time.time(), utc_now(), ""
     rc, out, _ = capture(ctx, ["git", "-C", REPO, "rev-parse", "HEAD"])
@@ -1330,13 +1715,20 @@ def cmd_run(args):
 # ---------------------------------------------------------------- evaluate / negative control
 
 def load_run(run_id):
+    pol = load_policy()
+    if not full(pol["run_id_pattern"], run_id):
+        sys.exit("invalid run id")
     d = os.path.join(EVIDENCE_ROOT, run_id)
-    if not os.path.isfile(os.path.join(d, "observations.json")):
+    if os.path.islink(d) or not os.path.isfile(os.path.join(d, "observations.json")):
         sys.exit("no evidence for run %s" % run_id)
     with open(os.path.join(d, "observations.json"), "rb") as f:
         obs = json.loads(f.read().decode("utf-8"))
     with open(os.path.join(d, "verdict.json"), "rb") as f:
         verdict_raw = f.read()
+    case = pol["cases"].get(obs.get("case"))
+    if obs.get("run_id") != run_id or case is None or run_id.split("-")[0] != case["run_id_prefix"]:
+        sys.exit("observations for %s name run %r case %r, which do not match the directory" % (
+            run_id, obs.get("run_id"), obs.get("case")))
 
     def read_log(rel):
         if rel.startswith("/") or ".." in rel.split("/"):
@@ -1349,16 +1741,33 @@ def load_run(run_id):
     return d, obs, verdict_raw, read_log
 
 
+def candidate_pinfo(obs):
+    """Verdict patch fields for an external input, taken from the observations (checked by evaluate)."""
+    inp = obs.get("input")
+    if not isinstance(inp, dict):
+        return None
+    return {"kind": "external", "sha256": inp.get("sha256"), "origin": inp.get("origin"),
+            "derived_from": inp.get("derived_from"), "snapshot": inp.get("snapshot"), "bytes": inp.get("bytes")}
+
+
 def cmd_evaluate(args):
     pol = load_policy()
     _d, obs, verdict_raw, read_log = load_run(args.run_id)
     old = json.loads(verdict_raw.decode("utf-8"))
-    ev = evaluate(obs, pol, read_log)
     gate_files, ident = gate_hashes()
+    external = pol["cases"][obs["case"]].get("external_input")
+    header = load_pinned_header(getattr(args, "pg_git", None), pol) if external else None
+    ev = evaluate(obs, pol, read_log, fixture_hashes(gate_files, pol), read_reference_raw, header)
+    print("RECOMPUTATION from saved evidence (no build, no handshake, no network); not a new run.")
     if ident != old.get("gate_identity"):
         print("NOTE: current gate identity %s differs from the run's %s" % (ident, old.get("gate_identity")))
-    patch = old.get("patch")
-    pinfo = None if patch is None else {"fixture": patch["fixture"], "sha256": patch["sha256"]}
+    if external and header is None:
+        print("NOTE: no authenticated pinned header (pass --pg-git); the candidate snapshot cannot be re-applied")
+    if external:
+        pinfo = candidate_pinfo(obs)
+    else:
+        patch = old.get("patch")
+        pinfo = None if patch is None else {"fixture": patch["fixture"], "sha256": patch["sha256"]}
     new = build_verdict(obs["run_id"], obs["case"], old.get("gate_identity"), old.get("gate_files"),
                         pol, pinfo, obs.get("reference"), ev)
     same = canon(new).encode("utf-8") == verdict_raw
@@ -1367,12 +1776,75 @@ def cmd_evaluate(args):
     return 0 if same else 1
 
 
+def candidate_variants(obs, read_log, read_ref):
+    """Synthetic in-memory tamperings of an external-input run's evidence."""
+    out = []
+
+    def copy():
+        return json.loads(json.dumps(obs))
+
+    snap = (obs.get("input") or {}).get("snapshot", "candidate.patch")
+
+    def drop_snapshot(r):
+        return None if r == snap else read_log(r)
+
+    def edit_snapshot(r):
+        data = read_log(r)
+        return data + b" \n" if (r == snap and data is not None) else data
+    out.append(("missing snapshot %s" % snap, obs, drop_snapshot, read_ref))
+    out.append(("edited snapshot %s" % snap, obs, edit_snapshot, read_ref))
+    for name, fn in (
+            ("input sha256 edited", lambda o: o["input"].update(sha256="0" * 64)),
+            ("input size edited", lambda o: o["input"].update(bytes=(o["input"].get("bytes") or 0) + 1)),
+            ("origin claimed as model", lambda o: o["input"].update(origin="model")),
+            ("origin switched to external", lambda o: o["input"].update(origin="external")),
+            ("derived_from switched fixture", lambda o: o["input"].update(
+                derived_from="hybrid-unconditional" if o["input"].get("derived_from") != "hybrid-unconditional"
+                else "hybrid-versioned")),
+            ("input block removed", lambda o: o.pop("input", None)),
+            ("patch receipt claims a fixture", lambda o: o["receipts"]["patch"].update(fixture="hybrid-versioned")),
+            ("patch receipt hash edited", lambda o: o["receipts"]["patch"].update(patch_sha256="f" * 64)),
+            ("source per-arm hash edited", lambda o: o["receipts"]["source"].update(
+                patched_file_sha256={"newer": "0" * 64, "v30": "0" * 64})),
+            ("source per-arm hash removed", lambda o: o["receipts"]["source"].pop("patched_file_sha256", None)),
+            ("reference removed", lambda o: o.update(reference=None)),
+            ("reference identity edited", lambda o: o["reference"].update(gate_identity="0" * 64)
+             if isinstance(o.get("reference"), dict) else None)):
+        o = copy()
+        try:
+            fn(o)
+        except (KeyError, TypeError, AttributeError):
+            pass
+        out.append((name, o, read_log, read_ref))
+
+    def edited_ref(rid):
+        raw = read_ref(rid)
+        return raw + b" " if raw is not None else None
+    out.append(("reference verdict bytes edited", obs, read_log, edited_ref))
+    sub = copy()
+    s = sha256_bytes(SUBSTITUTE_PATCH)
+    if isinstance(sub.get("input"), dict):
+        sub["input"].update(sha256=s, bytes=len(SUBSTITUTE_PATCH))
+    if isinstance(sub.get("receipts", {}).get("patch"), dict):
+        sub["receipts"]["patch"].update(patch_sha256=s, snapshot_sha256=s)
+    out.append(("substituted valid patch, digests updated", sub,
+                lambda r: SUBSTITUTE_PATCH if r == snap else read_log(r), read_ref))
+    return out
+
+
 def cmd_negative_control(args):
     pol = load_policy()
-    _d, obs, verdict_raw, read_log = load_run(args.run_id)
-    base = evaluate(obs, pol, read_log)["outcome"]
+    d, obs, verdict_raw, read_log = load_run(args.run_id)
+    before = tree_manifest(d)
+    gate_files, _ident = gate_hashes()
+    fx = fixture_hashes(gate_files, pol)
+    external = pol["cases"][obs["case"]].get("external_input")
+    header = load_pinned_header(getattr(args, "pg_git", None), pol) if external else None
+    base = evaluate(obs, pol, read_log, fx, read_reference_raw, header)["outcome"]
     target = "newer.hs.mixed"
     print("SYNTHETIC in-memory copies of run %s; original files are not modified." % args.run_id)
+    if external and header is None:
+        print("NOTE: no authenticated pinned header (pass --pg-git); candidate base cannot be ACCEPT")
     print("base outcome: %s" % base)
     variants = []
     o1 = json.loads(json.dumps(obs))
@@ -1388,18 +1860,23 @@ def cmd_negative_control(args):
         data = read_log(r)
         return data + b"tampered\n" if (r == rel and data is not None) else data
     variants.append(("edited log for %s" % target, obs, tampered))
+    variants = [(n, o, rl, read_reference_raw) for n, o, rl in variants]
+    if pol["cases"][obs["case"]].get("external_input"):
+        variants += candidate_variants(obs, read_log, read_reference_raw)
     ok = True
-    for name, o, rl in variants:
-        out = evaluate(o, pol, rl)
+    for name, o, rl, rr in variants:
+        out = evaluate(o, pol, rl, fx, rr, header)
         good = out["outcome"] != "ACCEPT"
         ok = ok and good
         print("  %-45s -> %-8s %s" % (name, out["outcome"], "OK (not ACCEPT)" if good else "FAILED CONTROL"))
     after = open(os.path.join(EVIDENCE_ROOT, args.run_id, "verdict.json"), "rb").read()
-    print("original verdict.json unchanged: %s" % (after == verdict_raw))
+    unchanged = after == verdict_raw and tree_manifest(d) == before
+    print("variants: %d" % len(variants))
+    print("original evidence files unchanged: %s" % unchanged)
     if base != "ACCEPT":
         print("note: base outcome is not ACCEPT, so this control shows only that tampering cannot create ACCEPT")
-    print("NEGATIVE CONTROL %s" % ("PASS" if ok and after == verdict_raw else "FAIL"))
-    return 0 if ok else 1
+    print("NEGATIVE CONTROL %s" % ("PASS" if ok and unchanged else "FAIL"))
+    return 0 if ok and unchanged else 1
 
 
 # ---------------------------------------------------------------- selftest
@@ -1446,6 +1923,334 @@ def synthetic_obs(pol):
     return obs, logs
 
 
+def synthetic_candidate(pol, header):
+    """Labeled synthetic external-input run: scripted copy of the versioned fixture, with a
+    synthetic baseline reference under the same (synthetic) identity. In-memory only. The
+    patched-header hashes are the real result of applying the fixture to the pinned header."""
+    obs, logs = synthetic_obs(pol)
+    gate_files, _ = gate_hashes()
+    fx = fixture_hashes(gate_files, pol)
+    with open(os.path.join(REPO, pol["fixtures"]["hybrid-versioned"]["path"]), "rb") as f:
+        snap = f.read()
+    sha = sha256_bytes(snap)
+    patched = sha256_bytes(validate_and_apply(snap, header, pol)[1].encode("utf-8"))
+    ref_checks = [{"id": "%s.%s" % (a, c), "result": "PASS"} for a in ARMS for c in ("build", "regression", "startup")]
+    ref_raw = canon({"case": "baseline", "run_id": "baseline-99", "gate_identity": "g",
+                     "checks": ref_checks, "schema": "synthetic"}).encode()
+    obs.update(case="candidate", run_id="candidate-90", schema="synthetic",
+               reference=reference_from_raw("baseline-99", ref_raw),
+               input={"snapshot": "candidate.patch", "sha256": sha, "bytes": len(snap),
+                      "origin": "scripted", "derived_from": "hybrid-versioned"})
+    obs["receipts"]["patch"].update(fixture=None, input_origin="scripted", derived_from="hybrid-versioned",
+                                    patch_sha256=sha, snapshot_sha256=sha, snapshot="candidate.patch",
+                                    patched_sha256=patched)
+    obs["receipts"]["source"]["patched_file_sha256"] = {a: patched for a in ARMS}
+    logs["candidate.patch"] = snap
+
+    def read_ref(rid):
+        return ref_raw if rid == "baseline-99" else None
+    return obs, logs, fx, read_ref, ref_raw
+
+
+def selftest_external(pol, t, header, pg_git):
+    import contextlib
+    import io
+    global EVIDENCE_ROOT
+    print("[external candidate input: arguments]")
+    t("policy defines case candidate as external input", pol["cases"].get("candidate", {}).get("external_input") is True)
+    t("original three cases unchanged", [pol["cases"][c].get("fixture") for c in
+                                         ("baseline", "hybrid-unconditional", "hybrid-versioned")]
+      == [None, "hybrid-unconditional", "hybrid-versioned"])
+    for rid, ok in (("candidate-90", True), ("candidate-01", True), ("versioned-04", True),
+                    ("candidate-90\n", False), ("candidate-9", False), ("candidate-100", False),
+                    ("../candidate-90", False), ("candidate-90/..", False), ("Candidate-90", False)):
+        t("run id %r %s" % (rid, "accepted" if ok else "refused"), full(pol["run_id_pattern"], rid) == ok)
+
+    def ns(**kw):
+        d = dict(case="candidate", run_id="candidate-90", patch_file="/x/in.patch", patch_sha256="a" * 64,
+                 origin="scripted", derived_from="hybrid-versioned", reference_run="baseline-04")
+        d.update(kw)
+        return argparse.Namespace(**d)
+    none4 = dict(patch_file=None, patch_sha256=None, origin=None, derived_from=None)
+    t("args: scripted candidate-90 with digest and reference accepted", check_run_args(ns(), pol) is None)
+    t("args: external candidate-01 accepted", check_run_args(ns(run_id="candidate-01", origin="external",
+                                                                  derived_from=None), pol) is None)
+    for name, kw in (
+            ("candidate without --patch-file", dict(patch_file=None)),
+            ("candidate without --patch-sha256", dict(patch_sha256=None)),
+            ("uppercase digest", dict(patch_sha256="A" * 64)),
+            ("short digest", dict(patch_sha256="a" * 63)),
+            ("digest with newline", dict(patch_sha256="a" * 64 + "\n")),
+            ("candidate without --origin", dict(origin=None)),
+            ("origin 'model'", dict(origin="model")),
+            ("origin 'fixture'", dict(origin="fixture")),
+            ("scripted without --derived-from", dict(derived_from=None)),
+            ("scripted derived from unknown fixture", dict(derived_from="hybrid-other")),
+            ("external with --derived-from", dict(run_id="candidate-01", origin="external")),
+            ("scripted on reserved candidate-01", dict(run_id="candidate-01")),
+            ("external on scripted id candidate-90", dict(origin="external", derived_from=None)),
+            ("candidate without --reference-run", dict(reference_run=None)),
+            ("case candidate with run id versioned-90", dict(run_id="versioned-90")),
+            ("case candidate with run id candidate-90 plus newline", dict(run_id="candidate-90\n")),
+            ("baseline with --patch-file", dict(none4, case="baseline", run_id="baseline-04", reference_run=None,
+                                                patch_file="/x")),
+            ("versioned with --patch-sha256", dict(none4, case="hybrid-versioned", run_id="versioned-04",
+                                                   patch_sha256="a" * 64)),
+            ("unconditional with --origin", dict(none4, case="hybrid-unconditional", run_id="uncond-04",
+                                                 origin="scripted")),
+            ("versioned with --derived-from", dict(none4, case="hybrid-versioned", run_id="versioned-04",
+                                                   derived_from="hybrid-versioned")),
+            ("baseline with --reference-run", dict(none4, case="baseline", run_id="baseline-04")),
+            ("unknown case", dict(case="model")),
+    ):
+        t("args refused: %s" % name, check_run_args(ns(**kw), pol) is not None)
+    t("args: versioned-04 with reference, no input flags accepted",
+      check_run_args(ns(**dict(none4, case="hybrid-versioned", run_id="versioned-04")), pol) is None)
+
+    print("[external candidate input: read once, snapshot]")
+    limit = pol["patch_policy"]["max_patch_bytes"]
+    gate_files, _ = gate_hashes()
+    fx = fixture_hashes(gate_files, pol)
+    with open(os.path.join(REPO, pol["fixtures"]["hybrid-versioned"]["path"]), "rb") as f:
+        vbytes = f.read()
+    with tempfile.TemporaryDirectory() as td:
+        td = os.path.realpath(td)
+
+        def mk(name, data):
+            p = os.path.join(td, name)
+            with open(p, "wb") as f:
+                f.write(data)
+            return p
+
+        def refused(fn):
+            try:
+                fn()
+                return False
+            except InputError:
+                return True
+        reg = mk("in.patch", vbytes)
+        t("regular file read once, exact bytes", read_input_once(reg, limit) == vbytes)
+        os.symlink(reg, os.path.join(td, "link.patch"))
+        t("symlink refused", refused(lambda: read_input_once(os.path.join(td, "link.patch"), limit)))
+        os.mkdir(os.path.join(td, "dir.patch"))
+        t("directory refused", refused(lambda: read_input_once(os.path.join(td, "dir.patch"), limit)))
+        if hasattr(os, "mkfifo"):
+            os.mkfifo(os.path.join(td, "fifo.patch"))
+            t("FIFO refused without blocking", refused(lambda: read_input_once(os.path.join(td, "fifo.patch"), limit)))
+        t("missing file refused", refused(lambda: read_input_once(os.path.join(td, "nope.patch"), limit)))
+        t("empty file refused", refused(lambda: read_input_once(mk("empty.patch", b""), limit)))
+        t("file of limit + 1 bytes refused", refused(lambda: read_input_once(mk("big.patch", b"x" * (limit + 1)), limit)))
+        t("file of exactly the limit read", len(read_input_once(mk("lim.patch", b"x" * limit), limit)) == limit)
+
+        protected = [os.path.join(td, "repo"), os.path.join(td, "work")]
+        for p in protected:
+            os.mkdir(p)
+        good = ns(patch_file=reg, patch_sha256=sha256_bytes(vbytes))
+        cand = prepare_candidate(good, pol, gate_files, protected)
+        t("prepare: digest and scripted-copy check pass for exact fixture copy",
+          cand["bytes"] == vbytes and cand["info"]["sha256"] == fx["hybrid-versioned"])
+        t("prepare: no input path recorded", reg not in canon(cand["info"]) and td not in canon(cand["info"]))
+        with open(reg, "ab") as f:
+            f.write(b"+#define DEFAULT_SSL_GROUPS \"X25519\"\n")
+        t("input changed after read: frozen bytes unchanged", cand["bytes"] == vbytes
+          and sha256_bytes(cand["bytes"]) == cand["info"]["sha256"])
+        t("prepare: changed input now refused (digest mismatch)", refused(lambda: prepare_candidate(good, pol, gate_files, protected)))
+        other = mk("other.patch", vbytes.replace(b"0x30500000L", b"0x30600000L"))
+        t("prepare: scripted input that differs from its fixture refused",
+          refused(lambda: prepare_candidate(ns(patch_file=other, patch_sha256=sha256_file(other)), pol, gate_files, protected)))
+        t("prepare: external input with matching digest accepted",
+          prepare_candidate(ns(patch_file=other, patch_sha256=sha256_file(other), run_id="candidate-01",
+                               origin="external", derived_from=None), pol, gate_files, protected)["info"]["origin"] == "external")
+        inner = os.path.join(protected[0], "in.patch")
+        with open(inner, "wb") as f:
+            f.write(vbytes)
+        t("prepare: input inside a protected or repository path refused",
+          refused(lambda: prepare_candidate(ns(patch_file=inner, patch_sha256=sha256_bytes(vbytes)), pol, gate_files, protected)))
+        snap = os.path.join(td, "candidate.patch")
+        write_new(snap, vbytes, 0o444)
+        try:
+            write_new(snap, b"other", 0o444)
+            t("snapshot never overwritten", False)
+        except OSError:
+            t("snapshot never overwritten", True)
+        t("snapshot written read-only", stat.S_IMODE(os.stat(snap).st_mode) == 0o444)
+
+    print("[external candidate input: binding in evaluate()]")
+    if header is None:
+        t("binding tests need the authenticated pinned header (--pg-git)", False)
+        return
+    obs, logs, fx, read_ref, ref_raw = synthetic_candidate(pol, header)
+    rl = logs.get
+    t("synthetic scripted candidate, consistent evidence -> ACCEPT",
+      evaluate(obs, pol, rl, fx, read_ref, header)["outcome"] == "ACCEPT")
+    t("same evidence without fixture hashes -> BLOCKED",
+      evaluate(obs, pol, rl, None, read_ref, header)["outcome"] == "BLOCKED")
+    t("same evidence without reference reader -> BLOCKED",
+      evaluate(obs, pol, rl, fx, None, header)["outcome"] == "BLOCKED")
+    t("same evidence without the pinned header -> BLOCKED",
+      evaluate(obs, pol, rl, fx, read_ref, None)["outcome"] == "BLOCKED")
+    t("same evidence with an altered pinned header -> BLOCKED",
+      evaluate(obs, pol, rl, fx, read_ref, header.replace("prime256v1", "prime256v2", 1))["outcome"] == "BLOCKED")
+    for name, o, lg, rr in candidate_variants(obs, rl, read_ref):
+        t("tampered: %s -> BLOCKED" % name, evaluate(o, pol, lg, fx, rr, header)["outcome"] == "BLOCKED")
+
+    def cmut(fn, lg=None, rr=read_ref, base=None):
+        o = json.loads(json.dumps(base or obs))
+        fn(o)
+        return evaluate(o, pol, lg or rl, fx, rr, header)
+
+    def external(o):
+        o.update(run_id="candidate-01")
+        o["input"].update(origin="external", derived_from=None)
+        o["receipts"]["patch"].update(input_origin="external", derived_from=None)
+    t("origin external on candidate-90 without derived_from -> BLOCKED",
+      cmut(lambda o: o["input"].update(origin="external", derived_from=None))["outcome"] == "BLOCKED")
+    t("external origin on candidate-01, no derived_from -> ACCEPT", cmut(external)["outcome"] == "ACCEPT")
+    t("input block on a fixture case -> BLOCKED", cmut(lambda o: o.update(case="hybrid-versioned"))["outcome"] == "BLOCKED")
+    t("snapshot that no longer parses while receipt PASS -> BLOCKED", cmut(
+        lambda o: (o["input"].update(sha256=sha256_bytes(b"junk\n"), bytes=5),
+                   o["receipts"]["patch"].update(patch_sha256=sha256_bytes(b"junk\n"),
+                                                 snapshot_sha256=sha256_bytes(b"junk\n"))),
+        lambda r: b"junk\n" if r == "candidate.patch" else logs.get(r))["outcome"] == "BLOCKED")
+
+    print("[external candidate input: snapshot re-applied to the pinned header]")
+    sub, ssha = SUBSTITUTE_PATCH, sha256_bytes(SUBSTITUTE_PATCH)
+    sub_result = sha256_bytes(validate_and_apply(sub, header, pol)[1].encode("utf-8"))
+    t("substitute patch is policy-valid and yields a different header",
+      sub_result != obs["receipts"]["patch"]["patched_sha256"])
+    ext = json.loads(json.dumps(obs))
+    external(ext)
+    sub_log = lambda r: sub if r == "candidate.patch" else logs.get(r)  # noqa: E731
+
+    def substitute(o):
+        o["input"].update(sha256=ssha, bytes=len(sub))
+        o["receipts"]["patch"].update(patch_sha256=ssha, snapshot_sha256=ssha)
+    out = cmut(substitute, sub_log, base=ext)
+    t("QC case: snapshot replaced by a valid 'none' patch, input and receipt digests updated, "
+      "compiled-header evidence unchanged -> BLOCKED",
+      out["outcome"] == "BLOCKED" and "differs from the patch receipt" in out["checks"][2]["note"])
+    print("      patch check note: %s" % out["checks"][2]["note"][:150])
+    out = cmut(lambda o: (substitute(o), o["receipts"]["patch"].update(patched_sha256=sub_result)), sub_log, base=ext)
+    t("same, receipt result also updated, exported headers unchanged -> BLOCKED",
+      out["outcome"] == "BLOCKED" and "exported header differs" in out["checks"][2]["note"])
+    out = cmut(lambda o: (substitute(o), o["receipts"]["patch"].update(patched_sha256=sub_result),
+                          o["receipts"]["source"].update(patched_file_sha256={a: sub_result for a in ARMS})),
+               sub_log, base=ext)
+    t("fully consistent substituted evidence -> binding holds (synthetic observations ACCEPT)",
+      out["outcome"] == "ACCEPT")
+    out = cmut(lambda o: o["receipts"]["source"].update(patched_file_sha256={"newer": obs["receipts"]["patch"]["patched_sha256"],
+                                                                             "v30": sub_result}), base=ext)
+    t("one arm's exported header differs from the re-applied result -> BLOCKED", out["outcome"] == "BLOCKED")
+    out = cmut(lambda o: (o["receipts"]["patch"].update(patched_sha256=sub_result),
+                          o["receipts"]["source"].update(patched_file_sha256={a: sub_result for a in ARMS})), base=ext)
+    t("receipt and exports agree with each other but not with the snapshot -> BLOCKED", out["outcome"] == "BLOCKED")
+
+    bad = SUBSTITUTE_PATCH.replace(b'"none"\n #else', b'"X448"\n #else')
+    bsha = sha256_bytes(bad)
+    bad_log = lambda r: bad if r == "candidate.patch" else logs.get(r)  # noqa: E731
+
+    def policy_reject(o, snap_sha=bsha, n=len(bad)):
+        o["input"].update(sha256=snap_sha, bytes=n)
+        o["receipts"]["patch"].update(status="fail", patch_sha256=snap_sha, snapshot_sha256=snap_sha)
+        o["receipts"]["patch"].pop("patched_sha256")
+        for k in mandatory_ids(pol):
+            if k not in ("preflight", "controls", "patch", "integrity"):
+                o["receipts"][k].update(status="not_run", log=None, log_sha256=None)
+    t("candidate fails patch policy, re-applied snapshot also fails -> REJECT",
+      cmut(policy_reject, bad_log, base=ext)["outcome"] == "REJECT")
+    t("candidate fails patch policy, snapshot missing -> BLOCKED",
+      cmut(policy_reject, lambda r: None if r == "candidate.patch" else logs.get(r), base=ext)["outcome"] == "BLOCKED")
+    t("receipt says FAIL but the re-applied snapshot passes the policy -> BLOCKED",
+      cmut(lambda o: policy_reject(o, obs["input"]["sha256"], obs["input"]["bytes"]), base=ext)["outcome"] == "BLOCKED")
+
+    def build_fail(o):
+        o["receipts"]["v30.build"]["status"] = "fail"
+    t("candidate build fail, same-identity reference passed build -> REJECT", cmut(build_fail)["outcome"] == "REJECT")
+    t("candidate build fail, reference identity differs -> BLOCKED", cmut(
+        lambda o: (build_fail(o), o["reference"].update(gate_identity="other")))["outcome"] == "BLOCKED")
+    vobs, vlogs = synthetic_obs(pol)
+    vobs["reference"] = reference_from_raw("baseline-99", ref_raw)
+    vobs["receipts"]["v30.build"]["status"] = "fail"
+    t("fixture build fail, reference verdict intact -> REJECT",
+      evaluate(vobs, pol, vlogs.get, fx, read_ref)["outcome"] == "REJECT")
+    t("fixture build fail, reference verdict bytes changed -> BLOCKED",
+      evaluate(vobs, pol, vlogs.get, fx, lambda rid: ref_raw + b" ")["outcome"] == "BLOCKED")
+    vobs["receipts"]["v30.build"]["status"] = "pass"
+    vobs["receipts"]["source"]["patched_file_sha256"] = {"newer": "0" * 64, "v30": "0" * 64}
+    vobs["receipts"]["patch"]["patched_sha256"] = "1" * 64
+    t("fixture source per-arm hash differs from validated result -> BLOCKED",
+      evaluate(vobs, pol, vlogs.get, fx, read_ref)["outcome"] == "BLOCKED")
+    vobs["receipts"]["source"].pop("patched_file_sha256")
+    t("fixture receipt without per-arm hashes (older format) still evaluates -> ACCEPT",
+      evaluate(vobs, pol, vlogs.get, fx, read_ref)["outcome"] == "ACCEPT")
+    t("reference reader refuses non-baseline and traversal ids",
+      read_reference_raw("../baseline-03") is None and read_reference_raw("versioned-03") is None
+      and read_reference_raw("baseline-03\n") is None)
+    ev = evaluate(obs, pol, rl, fx, read_ref)
+    v = build_verdict("candidate-90", "candidate", "g", gate_files, pol, candidate_pinfo(obs), obs["reference"], ev)
+    t("candidate verdict: schema /2, no fixture claim, input origin recorded",
+      v["schema"] == "shaar.gate.verdict/2" and v["patch"]["fixture"] is None
+      and v["patch"]["input"] == {"origin": "scripted", "derived_from": "hybrid-versioned",
+                                  "snapshot": "candidate.patch", "bytes": obs["input"]["bytes"]})
+    vf = build_verdict("versioned-90", "hybrid-versioned", "g", gate_files, pol,
+                       {"fixture": "hybrid-versioned", "sha256": "s"}, None, ev)
+    t("fixture verdict shape unchanged (schema /1, fixture and sha256 only)",
+      vf["schema"] == "shaar.gate.verdict/1" and vf["patch"] == {"fixture": "hybrid-versioned", "sha256": "s"})
+
+    print("[external candidate input: evaluate and negative-control on a temporary evidence tree]")
+    saved_root = EVIDENCE_ROOT
+    with tempfile.TemporaryDirectory() as td:
+        try:
+            EVIDENCE_ROOT = os.path.join(os.path.realpath(td), "gate-runs")
+            run = os.path.join(EVIDENCE_ROOT, "candidate-90")
+            os.makedirs(os.path.join(EVIDENCE_ROOT, "baseline-99"))
+            write_new(os.path.join(EVIDENCE_ROOT, "baseline-99", "verdict.json"), ref_raw)
+            for rel, data in logs.items():
+                os.makedirs(os.path.dirname(os.path.join(run, rel)), exist_ok=True)
+                write_new(os.path.join(run, rel), data)
+            gf, gi = gate_hashes()
+            sobs = json.loads(json.dumps(obs))
+            sobs["gate_identity"] = gi
+            ref = json.loads(ref_raw.decode())
+            ref["gate_identity"] = gi
+            ref_raw2 = canon(ref).encode()
+            os.chmod(os.path.join(EVIDENCE_ROOT, "baseline-99", "verdict.json"), 0o644)
+            with open(os.path.join(EVIDENCE_ROOT, "baseline-99", "verdict.json"), "wb") as f:
+                f.write(ref_raw2)
+            sobs["reference"] = reference_from_raw("baseline-99", ref_raw2)
+            ev = evaluate(sobs, pol, lambda r: logs.get(r), fx, read_reference_raw, header)
+            vraw = canon(build_verdict("candidate-90", "candidate", gi, gf, pol, candidate_pinfo(sobs),
+                                       sobs["reference"], ev)).encode()
+            write_new(os.path.join(run, "observations.json"), canon(sobs))
+            write_new(os.path.join(run, "verdict.json"), vraw)
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                rc_e = cmd_evaluate(argparse.Namespace(run_id="candidate-90", pg_git=pg_git))
+                rc_n = cmd_negative_control(argparse.Namespace(run_id="candidate-90", pg_git=pg_git))
+                rc_e0 = cmd_evaluate(argparse.Namespace(run_id="candidate-90", pg_git=None))
+            text = buf.getvalue()
+            t("temporary run outcome ACCEPT before controls", ev["outcome"] == "ACCEPT")
+            t("evaluate on saved candidate evidence MATCHES", rc_e == 0 and "MATCHES recomputation" in text)
+            t("evaluate of a candidate ACCEPT without --pg-git -> DIFFERS (fails closed)", rc_e0 == 1)
+            t("negative-control on candidate run: every variant not ACCEPT, files unchanged",
+              rc_n == 0 and "NEGATIVE CONTROL PASS" in text and "FAILED CONTROL" not in text)
+            os.chmod(os.path.join(run, "verdict.json"), 0o644)
+            with open(os.path.join(run, "verdict.json"), "wb") as f:
+                f.write(vraw.replace(b'"origin": "scripted"', b'"origin": "external"'))
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc_e2 = cmd_evaluate(argparse.Namespace(run_id="candidate-90", pg_git=pg_git))
+            t("evaluate with an edited verdict origin -> DIFFERS", rc_e2 == 1)
+            os.rename(run, os.path.join(EVIDENCE_ROOT, "candidate-91"))
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    load_run("candidate-91")
+                t("evidence whose run id differs from its directory refused", False)
+            except SystemExit:
+                t("evidence whose run id differs from its directory refused", True)
+        finally:
+            EVIDENCE_ROOT = saved_root
+
+
 def cmd_selftest(args):
     pol = load_policy()
     results = []
@@ -1455,8 +2260,8 @@ def cmd_selftest(args):
         print("  %-62s %s" % (name, "PASS" if cond else "FAIL"))
 
     print("[policy]")
-    t("run id pattern accepts baseline-01", re.match(pol["run_id_pattern"], "baseline-01"))
-    t("run id pattern rejects ../x", not re.match(pol["run_id_pattern"], "../x"))
+    t("run id pattern accepts baseline-01", full(pol["run_id_pattern"], "baseline-01"))
+    t("run id pattern rejects ../x", not full(pol["run_id_pattern"], "../x"))
     t("no absolute machine paths in policy", ("/" + "Users/") not in open(POLICY_PATH).read()
       and "/usr/local" not in open(POLICY_PATH).read())
 
@@ -1589,6 +2394,8 @@ def cmd_selftest(args):
     t("FAIL in arm with blocked identity -> BLOCKED", mut(ident_block, lambda r: xt if r == "logs/newer.hs.mixed.txt" else logs.get(r)) == "BLOCKED")
     t("not_run without a FAIL -> BLOCKED", mut(lambda o: o["receipts"]["v30.regression"].update(status="not_run")) == "BLOCKED")
 
+    selftest_external(pol, t, load_pinned_header(args.pg_git, pol), args.pg_git)
+
     print("[child environment]")
     os.environ["MODEL_API_KEY"] = "selftest-placeholder-not-a-key"
     c = Ctx()
@@ -1603,7 +2410,15 @@ def cmd_selftest(args):
     return 0 if not failed else 1
 
 
-def main():
+def cmd_identity(_args):
+    files, ident = gate_hashes()
+    for p in GATE_FILES:
+        print("%s  %s" % (files[p], p))
+    print("gate_identity=%s" % ident)
+    return 0
+
+
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd")
     s = sub.add_parser("selftest")
@@ -1617,17 +2432,24 @@ def main():
     r.add_argument("--old-prefix", required=True)
     r.add_argument("--client", required=True)
     r.add_argument("--work-root", required=True)
-    r.add_argument("--reference-run")
+    r.add_argument("--reference-run", help="baseline run under the same gate identity")
     r.add_argument("--jobs", type=int)
+    r.add_argument("--patch-file", help="candidate only: external patch file outside the repository")
+    r.add_argument("--patch-sha256", help="candidate only: expected SHA-256 of the patch file (lowercase hex)")
+    r.add_argument("--origin", help="candidate only: scripted or external (see policy external_input.origins)")
+    r.add_argument("--derived-from", help="candidate, origin scripted only: fixture the input is an exact copy of")
     e = sub.add_parser("evaluate")
     e.add_argument("run_id")
+    e.add_argument("--pg-git", help="pinned PostgreSQL checkout, read-only; required to re-apply a candidate snapshot")
     n = sub.add_parser("negative-control")
     n.add_argument("run_id")
-    args = ap.parse_args()
-    if args.cmd in ("evaluate", "negative-control") and not re.match(load_policy()["run_id_pattern"], args.run_id):
+    n.add_argument("--pg-git", help="pinned PostgreSQL checkout, read-only; required to re-apply a candidate snapshot")
+    sub.add_parser("identity")
+    args = ap.parse_args(argv)
+    if args.cmd in ("evaluate", "negative-control") and not full(load_policy()["run_id_pattern"], args.run_id):
         sys.exit("invalid run id")
     fn = {"selftest": cmd_selftest, "run": cmd_run, "evaluate": cmd_evaluate,
-          "negative-control": cmd_negative_control}.get(args.cmd)
+          "negative-control": cmd_negative_control, "identity": cmd_identity}.get(args.cmd)
     if fn is None:
         ap.print_help()
         return 2

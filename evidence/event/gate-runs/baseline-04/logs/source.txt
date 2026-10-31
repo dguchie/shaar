@@ -1,0 +1,8 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## fresh exports per arm
+newer: 7720 files, export digest 366a47bec95c11aae48d7e7c13789622ad29dbeea45f8484f517ff08714f2444, changed []
+v30: 7720 files, export digest 366a47bec95c11aae48d7e7c13789622ad29dbeea45f8484f517ff08714f2444, changed []
+newer: src/include/libpq/libpq.h SHA-256 after writing c7124f50fd4a237a9fc48fc802075fff35292247dc336d96aeae84dc6981c2de
+v30: src/include/libpq/libpq.h SHA-256 after writing c7124f50fd4a237a9fc48fc802075fff35292247dc336d96aeae84dc6981c2de
+problems: none

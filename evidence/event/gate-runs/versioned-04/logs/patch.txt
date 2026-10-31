@@ -1,0 +1,20 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## patch validation
+fixture hybrid-versioned validated: single allowed file, edits within lines [137, 141], added lines match policy patterns, exact context, no change outside region
+## resulting source diff (harness-computed)
+--- a/src/include/libpq/libpq.h
++++ b/src/include/libpq/libpq.h
+@@ -135,7 +135,12 @@
+ #endif
+ 
+ #ifdef USE_SSL
++#include <openssl/opensslv.h>
++#if OPENSSL_VERSION_NUMBER >= 0x30500000L
++#define DEFAULT_SSL_GROUPS "X25519MLKEM768:X25519:prime256v1"
++#else
+ #define DEFAULT_SSL_GROUPS "X25519:prime256v1"
++#endif
+ #else
+ #define DEFAULT_SSL_GROUPS "none"
+ #endif

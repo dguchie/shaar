@@ -1,0 +1,120 @@
+{
+  "elapsed_seconds": 277.3,
+  "finished_utc": "2026-10-31T05:03:48Z",
+  "jobs": 16,
+  "model_calls": 0,
+  "owned_processes": [
+    {
+      "pid": 16685,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 16693,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 16701,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 16709,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 16720,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 16730,
+      "stopped": true,
+      "what": "control s_server c6"
+    },
+    {
+      "pid": 29604,
+      "what": "postmaster newer"
+    },
+    {
+      "command_before_stop": "$WORK/uncond-04/prefix-newer/bin/postgres -D $WORK/uncond-04/data-newer",
+      "pid": 29604,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster newer"
+    }
+  ],
+  "run_id": "uncond-04",
+  "schema": "shaar.gate.accounting/1",
+  "started_utc": "2026-10-31T04:59:11Z",
+  "steps": [
+    {
+      "exit": "0",
+      "seconds": 37.9,
+      "step": "newer.configure"
+    },
+    {
+      "exit": "0",
+      "seconds": 53.3,
+      "step": "newer.make"
+    },
+    {
+      "exit": "0",
+      "seconds": 7.5,
+      "step": "newer.install"
+    },
+    {
+      "exit": "0",
+      "seconds": 32.5,
+      "step": "newer.regression"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.9,
+      "step": "newer.initdb"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.1,
+      "step": "newer.start"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.1,
+      "step": "newer.stop"
+    },
+    {
+      "exit": "0",
+      "seconds": 38.5,
+      "step": "v30.configure"
+    },
+    {
+      "exit": "0",
+      "seconds": 55.5,
+      "step": "v30.make"
+    },
+    {
+      "exit": "0",
+      "seconds": 6.5,
+      "step": "v30.install"
+    },
+    {
+      "exit": "0",
+      "seconds": 30.3,
+      "step": "v30.regression"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.9,
+      "step": "v30.initdb"
+    },
+    {
+      "exit": "1",
+      "seconds": 0.1,
+      "step": "v30.start"
+    }
+  ],
+  "stop_reason": null
+}

@@ -1,0 +1,16 @@
+--- a/src/include/libpq/libpq.h
++++ b/src/include/libpq/libpq.h
+@@ -135,7 +135,12 @@
+ #endif
+ 
+ #ifdef USE_SSL
+-#define DEFAULT_SSL_GROUPS "X25519:prime256v1"
++#include <openssl/opensslv.h>
++#if OPENSSL_VERSION_NUMBER >= 0x30500000L
++#define DEFAULT_SSL_GROUPS "X25519MLKEM768:X25519:prime256v1"
++#else
++#define DEFAULT_SSL_GROUPS "X25519:prime256v1"
++#endif
+ #else
+ #define DEFAULT_SSL_GROUPS "none"
+ #endif

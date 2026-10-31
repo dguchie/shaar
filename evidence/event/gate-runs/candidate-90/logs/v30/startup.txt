@@ -1,0 +1,30 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## initdb (last 15 of 23 lines)
+
+creating directory $WORK/candidate-90/data-v30 ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... America/Los_Angeles
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+
+Sync to disk skipped.
+The data directory might become corrupt if the operating system crashes.
+
+[exit 0]
+## pg_ctl start
+$ $WORK/candidate-90/prefix-v30/bin/pg_ctl -D $WORK/candidate-90/data-v30 -l $WORK/candidate-90/private-logs/v30/server.log -w -t 60 start
+waiting for server to start.... done
+server started
+
+[exit 0]
+## server log
+2026-10-30 22:12:42.493 PDT [93625] LOG:  starting PostgreSQL 20devel on x86_64-apple-darwin25.2.0, compiled by Apple clang version 17.0.0 (clang-1700.6.3.2), 64-bit
+2026-10-30 22:12:42.494 PDT [93625] LOG:  listening on IPv4 address "127.0.0.1", port 55402
+2026-10-30 22:12:42.495 PDT [93625] LOG:  listening on Unix socket "$WORK/candidate-90/sock/.s.PGSQL.55402"
+2026-10-30 22:12:42.499 PDT [93630] LOG:  database system was shut down at 2026-10-30 22:12:42 PDT
+2026-10-30 22:12:42.502 PDT [93625] LOG:  database system is ready to accept connections

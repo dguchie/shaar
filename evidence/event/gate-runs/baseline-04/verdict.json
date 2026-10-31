@@ -1,0 +1,245 @@
+{
+  "case": "baseline",
+  "checks": [
+    {
+      "attribution": "environment",
+      "evidence": [
+        "preflight"
+      ],
+      "id": "preflight",
+      "note": "pin, prefixes, client, ports and tools verified",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "reference",
+      "evidence": [
+        "control.c1",
+        "control.c2",
+        "control.c3",
+        "control.c4",
+        "control.c5",
+        "control.c6"
+      ],
+      "id": "controls",
+      "note": "all reference controls matched",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "policy",
+      "evidence": [
+        "patch"
+      ],
+      "id": "patch",
+      "note": "no patch (baseline)",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "source"
+      ],
+      "id": "source",
+      "note": "fresh export per arm; only the allowed file differs from the pin",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "environment",
+      "evidence": [
+        "integrity"
+      ],
+      "id": "integrity",
+      "note": "gate, policy, client, libraries and protected tree unchanged",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.identity"
+      ],
+      "id": "newer.identity",
+      "note": "headers, linkage and runtime-loaded libraries match the newer arm",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.build"
+      ],
+      "id": "newer.build",
+      "note": "configure, make, make install exit 0",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.regression"
+      ],
+      "id": "newer.regression",
+      "note": "# All 239 tests passed.",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "newer.startup"
+      ],
+      "id": "newer.startup",
+      "note": "server listening on 127.0.0.1:55401 with ssl=on",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "policy",
+      "evidence": [
+        "newer.hs.mixed"
+      ],
+      "id": "newer.hs.mixed",
+      "note": "observed ok group=X25519",
+      "required": true,
+      "result": "FAIL"
+    },
+    {
+      "attribution": "policy",
+      "evidence": [
+        "newer.hs.hybrid_only"
+      ],
+      "id": "newer.hs.hybrid_only",
+      "note": "observed tls_failure group=None",
+      "required": true,
+      "result": "FAIL"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.x25519_only"
+      ],
+      "id": "newer.hs.x25519_only",
+      "note": "observed ok group=X25519",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "newer.hs.p256_only"
+      ],
+      "id": "newer.hs.p256_only",
+      "note": "observed ok group=P-256",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.identity"
+      ],
+      "id": "v30.identity",
+      "note": "headers, linkage and runtime-loaded libraries match the v30 arm",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.build"
+      ],
+      "id": "v30.build",
+      "note": "configure, make, make install exit 0",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.regression"
+      ],
+      "id": "v30.regression",
+      "note": "# All 239 tests passed.",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "measurement",
+      "evidence": [
+        "v30.startup"
+      ],
+      "id": "v30.startup",
+      "note": "server listening on 127.0.0.1:55402 with ssl=on",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.mixed"
+      ],
+      "id": "v30.hs.mixed",
+      "note": "observed ok group=X25519",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.hybrid_only"
+      ],
+      "id": "v30.hs.hybrid_only",
+      "note": "observed tls_failure group=None",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.x25519_only"
+      ],
+      "id": "v30.hs.x25519_only",
+      "note": "observed ok group=X25519",
+      "required": true,
+      "result": "PASS"
+    },
+    {
+      "attribution": "observation",
+      "evidence": [
+        "v30.hs.p256_only"
+      ],
+      "id": "v30.hs.p256_only",
+      "note": "observed ok group=P-256",
+      "required": true,
+      "result": "PASS"
+    }
+  ],
+  "claim": null,
+  "counts": {
+    "attempted": 21,
+    "blocked": 0,
+    "fail": 2,
+    "mandatory": 21,
+    "not_run": 0,
+    "pass": 19
+  },
+  "decided_by": "gate/check.py evaluate() from receipts, logs and policy; no model involved",
+  "gate_files": {
+    "gate/check.py": "d827fd539a1065573bb21443255b5955e9a520aa6326f91536bab06ac1dca9d9",
+    "gate/fixtures/hybrid-unconditional.patch": "aa4b47d507f201168587a4ccc2ad68cb8de726a740f7dc55971e451ce07c421e",
+    "gate/fixtures/hybrid-versioned.patch": "4e1816d71f2352ea901f622756e05a76365694ad966d7de12349b48b8b7f7c63",
+    "gate/policy.json": "fc7d8c9ebfbf3c0f817c6c669cfff407925e1a06b00595ac7525916cec660133"
+  },
+  "gate_identity": "6895c5873799e6dc2a083c18f2d01aa1f6bc4bcdc71551610e54c65620ae2e9b",
+  "outcome": "REJECT",
+  "patch": null,
+  "policy_sha256": "fc7d8c9ebfbf3c0f817c6c669cfff407925e1a06b00595ac7525916cec660133",
+  "reason": "newer.hs.mixed FAIL: observed ok group=X25519",
+  "reference_run": null,
+  "run_id": "baseline-04",
+  "schema": "shaar.gate.verdict/1",
+  "upstream_commit": "68af68ac691f2b57d29524a191debed9b0bdd558"
+}

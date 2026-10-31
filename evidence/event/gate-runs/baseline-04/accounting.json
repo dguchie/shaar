@@ -1,0 +1,136 @@
+{
+  "elapsed_seconds": 289.5,
+  "finished_utc": "2026-10-31T04:59:08Z",
+  "jobs": 16,
+  "model_calls": 0,
+  "owned_processes": [
+    {
+      "pid": 89885,
+      "stopped": true,
+      "what": "control s_server c1"
+    },
+    {
+      "pid": 89893,
+      "stopped": true,
+      "what": "control s_server c2"
+    },
+    {
+      "pid": 89901,
+      "stopped": true,
+      "what": "control s_server c3"
+    },
+    {
+      "pid": 89910,
+      "stopped": true,
+      "what": "control s_server c4"
+    },
+    {
+      "pid": 89918,
+      "stopped": true,
+      "what": "control s_server c5"
+    },
+    {
+      "pid": 89927,
+      "stopped": true,
+      "what": "control s_server c6"
+    },
+    {
+      "pid": 3667,
+      "what": "postmaster newer"
+    },
+    {
+      "command_before_stop": "$WORK/baseline-04/prefix-newer/bin/postgres -D $WORK/baseline-04/data-newer",
+      "pid": 3667,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster newer"
+    },
+    {
+      "pid": 16442,
+      "what": "postmaster v30"
+    },
+    {
+      "command_before_stop": "$WORK/baseline-04/prefix-v30/bin/postgres -D $WORK/baseline-04/data-v30",
+      "pid": 16442,
+      "pidfile_matches": true,
+      "stopped": true,
+      "what": "stop postmaster v30"
+    }
+  ],
+  "run_id": "baseline-04",
+  "schema": "shaar.gate.accounting/1",
+  "started_utc": "2026-10-31T04:54:19Z",
+  "steps": [
+    {
+      "exit": "0",
+      "seconds": 41.8,
+      "step": "newer.configure"
+    },
+    {
+      "exit": "0",
+      "seconds": 53.0,
+      "step": "newer.make"
+    },
+    {
+      "exit": "0",
+      "seconds": 8.7,
+      "step": "newer.install"
+    },
+    {
+      "exit": "0",
+      "seconds": 41.9,
+      "step": "newer.regression"
+    },
+    {
+      "exit": "0",
+      "seconds": 1.0,
+      "step": "newer.initdb"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.2,
+      "step": "newer.start"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.1,
+      "step": "newer.stop"
+    },
+    {
+      "exit": "0",
+      "seconds": 38.3,
+      "step": "v30.configure"
+    },
+    {
+      "exit": "0",
+      "seconds": 51.5,
+      "step": "v30.make"
+    },
+    {
+      "exit": "0",
+      "seconds": 6.8,
+      "step": "v30.install"
+    },
+    {
+      "exit": "0",
+      "seconds": 30.9,
+      "step": "v30.regression"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.9,
+      "step": "v30.initdb"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.2,
+      "step": "v30.start"
+    },
+    {
+      "exit": "0",
+      "seconds": 0.1,
+      "step": "v30.stop"
+    }
+  ],
+  "stop_reason": null
+}

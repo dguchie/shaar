@@ -1,0 +1,21 @@
+diff --git a/src/include/libpq/libpq.h b/src/include/libpq/libpq.h
+--- a/src/include/libpq/libpq.h
++++ b/src/include/libpq/libpq.h
+@@ -136,7 +136,12 @@
+ 
+-#ifdef USE_SSL
+-#define DEFAULT_SSL_GROUPS "X25519:prime256v1"
+-#else
+-#define DEFAULT_SSL_GROUPS "none"
+-#endif
++#ifdef USE_SSL
++#include <openssl/opensslv.h>
++#if OPENSSL_VERSION_NUMBER >= 0x30500000L
++#define DEFAULT_SSL_GROUPS "X25519MLKEM768:X25519:prime256v1"
++#else
++#define DEFAULT_SSL_GROUPS "X25519:prime256v1"
++#endif
++#else
++#define DEFAULT_SSL_GROUPS "none"
++#endif
+ 

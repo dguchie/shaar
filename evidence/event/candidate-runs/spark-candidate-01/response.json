@@ -1,0 +1,36 @@
+{
+  "error": null,
+  "format": "shaar-candidate-response/1",
+  "proposal_id": "spark-candidate-01",
+  "reply": {
+    "choices_returned": 1,
+    "content": "{\"explanation\": \"Prefer hybrid X25519MLKEM768 first with classical fallback, gated on OpenSSL 3.5+ where the group exists.\", \"patch\": \"diff --git a/src/include/libpq/libpq.h b/src/include/libpq/libpq.h\\n--- a/src/include/libpq/libpq.h\\n+++ b/src/include/libpq/libpq.h\\n@@ -136,7 +136,12 @@\\n \\n-#ifdef USE_SSL\\n-#define DEFAULT_SSL_GROUPS \\\"X25519:prime256v1\\\"\\n-#else\\n-#define DEFAULT_SSL_GROUPS \\\"none\\\"\\n-#endif\\n+#ifdef USE_SSL\\n+#include <openssl/opensslv.h>\\n+#if OPENSSL_VERSION_NUMBER >= 0x30500000L\\n+#define DEFAULT_SSL_GROUPS \\\"X25519MLKEM768:X25519:prime256v1\\\"\\n+#else\\n+#define DEFAULT_SSL_GROUPS \\\"X25519:prime256v1\\\"\\n+#endif\\n+#else\\n+#define DEFAULT_SSL_GROUPS \\\"none\\\"\\n+#endif\\n \\n\", \"source_refs\": [\"SRC1\", \"SRC2\"]}",
+    "finish_reason": "stop",
+    "message_fields_not_stored": [],
+    "model_returned": "muse-spark-1.3",
+    "refusal": null,
+    "response_id": "chatcmpl-[redacted-uuid]",
+    "tool_calls_returned": 0,
+    "usage": {
+      "completion_tokens": 5730,
+      "completion_tokens_details": {
+        "reasoning_tokens": 5479
+      },
+      "prompt_tokens": 1154,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 6884
+    }
+  },
+  "sanitizer": {
+    "content_changed": false
+  },
+  "transport": {
+    "http_status": 200,
+    "outcome": "REPLY_RECORDED",
+    "redirect_refused": false,
+    "sent": "yes",
+    "timeout": false
+  }
+}

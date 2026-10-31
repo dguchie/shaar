@@ -1,0 +1,60 @@
+{
+  "format": "shaar-candidate-source/1",
+  "items": [
+    {
+      "commit": "68af68ac691f2b57d29524a191debed9b0bdd558",
+      "excerpt_sha256": "274157662c676b36c6b9d49afe125df916bda0fb8234f2cd14e932ff09ee818f",
+      "file_bytes": 5339,
+      "file_git_blob": "d15073a0a93a0e12aa7d7b0d64ff7a4e511add4d",
+      "file_sha256": "c7124f50fd4a237a9fc48fc802075fff35292247dc336d96aeae84dc6981c2de",
+      "first_line": 125,
+      "id": "SRC1",
+      "last_line": 148,
+      "lines": [
+        "#ifdef USE_SSL",
+        "#define SSL_LIBRARY \"OpenSSL\"",
+        "#else",
+        "#define SSL_LIBRARY \"\"",
+        "#endif",
+        "",
+        "#ifdef USE_OPENSSL",
+        "#define DEFAULT_SSL_CIPHERS \"HIGH:MEDIUM:+3DES:!aNULL\"",
+        "#else",
+        "#define DEFAULT_SSL_CIPHERS \"none\"",
+        "#endif",
+        "",
+        "#ifdef USE_SSL",
+        "#define DEFAULT_SSL_GROUPS \"X25519:prime256v1\"",
+        "#else",
+        "#define DEFAULT_SSL_GROUPS \"none\"",
+        "#endif",
+        "",
+        "/*",
+        " * prototypes for functions in be-secure-gssapi.c",
+        " */",
+        "#ifdef ENABLE_GSS",
+        "extern ssize_t secure_open_gssapi(Port *port);",
+        "#endif"
+      ],
+      "path": "src/include/libpq/libpq.h",
+      "role": "editable file; original lines 137-141 are the editable region"
+    },
+    {
+      "commit": "68af68ac691f2b57d29524a191debed9b0bdd558",
+      "excerpt_sha256": "7dfc8c1461781a9d7196a72f6f2423b71f30dc355051e1520981f7540d336a40",
+      "file_bytes": 152991,
+      "file_git_blob": "380679a76c09611e80542e83b85e77ff3af0adbf",
+      "file_sha256": "5e8ca7a3198daf53654e62e06361f8b44a3938e01bbe21544c9d11f7480f208b",
+      "first_line": 2812,
+      "id": "SRC2",
+      "last_line": 2812,
+      "lines": [
+        "  boot_val => 'DEFAULT_SSL_GROUPS',"
+      ],
+      "path": "src/backend/utils/misc/guc_parameters.dat",
+      "role": "read-only; shows where the default takes effect; not an edit target"
+    }
+  ],
+  "note": "excerpts read with git show at the pin; SRC1 checked against the gate policy's pinned blob and SHA-256; SRC2's line checked against the pinned text",
+  "proposal_id": "spark-candidate-01"
+}

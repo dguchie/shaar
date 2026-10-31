@@ -1,0 +1,71 @@
+{
+  "attempt": {
+    "allowance": {
+      "input_assumption": "input units bounded by request-body bytes plus 512, assuming at least one byte of body per input unit; this is an allowance, not a provider billing cap",
+      "input_units_bound": 5081,
+      "output_basis": "requested max output; reasoning recorded as included in it",
+      "output_units_bound": 8192,
+      "usd": 0.041168
+    },
+    "billing": "PENDING",
+    "body_bytes": 4569,
+    "body_sha256": "256170582462d7b8d5336bfaad9962c0229f4f8438da70c15d2a27571194709a",
+    "kind": "primary",
+    "number": 1,
+    "of_allowed": 1,
+    "sent": "yes",
+    "timing": {
+      "latency_ms": 22174
+    },
+    "usage_estimate_usd": 0.025795,
+    "warnings": []
+  },
+  "basis": {
+    "input_usd_per_mtok": 1.25,
+    "max_out_param": "max_tokens",
+    "output_usd_per_mtok": 4.25,
+    "pricing_doc": {
+      "id": "D1",
+      "retrieved": "2026-10-28",
+      "title": "Pricing and rate limits - Meta Model API",
+      "url": "https://dev.meta.ai/docs/pricing-rate-limits"
+    },
+    "probe_request_max_out": 4096,
+    "reasoning": "billed_as_output",
+    "reasoning_doc": {
+      "id": "D4",
+      "retrieved": "2026-10-28",
+      "title": "Reasoning - Meta Model API",
+      "url": "https://dev.meta.ai/docs/reasoning"
+    }
+  },
+  "budget_before": {
+    "basis_note": "billing-console balance as recorded before probing, minus the final-run reserve, minus every earlier sent or possibly sent allowance; observed billing is not read",
+    "development_headroom_usd": 119.418328,
+    "final_reserve_usd": 30,
+    "headroom_usd": 1.0,
+    "prior_committed_allowance_usd": 0.581672,
+    "prior_reservations": [
+      {
+        "kind": "capability probe",
+        "requests": 6,
+        "source": "evidence/event/capability-probe/probe-results.json",
+        "usd": 0.562325
+      },
+      {
+        "kind": "shaar.py run",
+        "requests": 1,
+        "sent": "yes",
+        "source": "evidence/event/runs/spark-sourcemap-01/accounting.json",
+        "usd": 0.019347
+      }
+    ],
+    "remaining_usd_billing_console_before_probing": 150,
+    "subcap_usd": 1.0
+  },
+  "cumulative_committed_allowance_usd": 0.62284,
+  "format": "shaar-candidate-accounting/1",
+  "headroom_after_usd": 0.958832,
+  "note": "allowance is counted in full for every sent or possibly sent request",
+  "proposal_id": "spark-candidate-01"
+}

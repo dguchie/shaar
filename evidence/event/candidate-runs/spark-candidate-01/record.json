@@ -1,0 +1,60 @@
+{
+  "files_sha256": {
+    "request.json": "fc448f3d830694272cfc24bb13c780d7d77b838ec5816c71560c2a732a871104",
+    "response.json": "63f825560a3cf0379dfaf2fc36c24c5c8ce806a5197a3059731db530e6341bdf",
+    "source.json": "57462a25f5d7e516948979b99259ad643dd51966ba1e299e6ec3d793737a9b52"
+  },
+  "format": "shaar-candidate-record/1",
+  "gate": {
+    "input_sha256_required": "64f930349be37204721a5b774489f3b5060acedcb4f341938085b5b38f394a07",
+    "note": "the verdict is decided only by gate/check.py and lives only in evidence/event/gate-runs/candidate-01/verdict.json",
+    "origin": "external",
+    "reference_run": "baseline-04",
+    "run_id": "candidate-01",
+    "verdict": null
+  },
+  "model": {
+    "requested": "muse-spark-1.3",
+    "returned": "muse-spark-1.3"
+  },
+  "patch": {
+    "bytes": 536,
+    "derivation": "json.loads(response.json reply.content)['patch'].encode('utf-8'); no trimming, line-ending change or repair",
+    "file": "candidate.patch",
+    "sha256": "64f930349be37204721a5b774489f3b5060acedcb4f341938085b5b38f394a07"
+  },
+  "proposal": {
+    "incomplete_reasons": [],
+    "status": "complete"
+  },
+  "proposal_id": "spark-candidate-01",
+  "reader_disclosure": {
+    "sent_to_model": false,
+    "text": "The request asks for a hybrid-first default with classical fallback and supplies the gate's patch-format rules and added-line allowlist, including the permitted OpenSSL-version-conditional line forms. It does not state the OpenSSL 3.0 compatibility requirement that the gate enforces, the gate's two-library test matrix, or any fixture. This is a constrained, partially specified task, not a test of a fully specified compatibility request. The allowlist sharply limits the shape of any patch. No repair prompt was sent."
+  },
+  "request_body_sha256": "256170582462d7b8d5336bfaad9962c0229f4f8438da70c15d2a27571194709a",
+  "task": {
+    "id": "pg-default-ssl-groups-hybrid/1",
+    "input_label": "authenticated upstream source excerpts",
+    "source_ids": [
+      "SRC1",
+      "SRC2"
+    ]
+  },
+  "transport": {
+    "http_status": 200,
+    "outcome": "REPLY_RECORDED",
+    "sent": "yes"
+  },
+  "uncertainty": [
+    "The model's reasoning is not visible and is not stored; only the visible reply is recorded.",
+    "Usage figures are as reported by the provider; observed billing is PENDING.",
+    "The allowance is an assumption-based bound, not a provider-enforced spending cap.",
+    "The gate records origin 'external'; it makes no authorship claim. The model-origin claim rests on this record: the gate input SHA-256 must equal patch.sha256 in this record."
+  ],
+  "validation": {
+    "errors": [],
+    "notes": [],
+    "ok": true
+  }
+}

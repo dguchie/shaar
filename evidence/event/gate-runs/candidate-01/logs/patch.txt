@@ -1,0 +1,22 @@
+# Sanitized log. Paths shown as $HOME/$WORK/$REPO/$USER; PEM blocks removed;
+# long outputs truncated to their last lines as marked. Full logs stay private.
+## patch input
+external input (origin external), snapshot candidate.patch, 536 bytes, SHA-256 64f930349be37204721a5b774489f3b5060acedcb4f341938085b5b38f394a07
+## patch validation
+snapshot validated: single allowed file, edits within lines [137, 141], added lines match policy patterns, exact context, no change outside region
+## resulting source diff (harness-computed)
+--- a/src/include/libpq/libpq.h
++++ b/src/include/libpq/libpq.h
+@@ -135,7 +135,12 @@
+ #endif
+ 
+ #ifdef USE_SSL
++#include <openssl/opensslv.h>
++#if OPENSSL_VERSION_NUMBER >= 0x30500000L
++#define DEFAULT_SSL_GROUPS "X25519MLKEM768:X25519:prime256v1"
++#else
+ #define DEFAULT_SSL_GROUPS "X25519:prime256v1"
++#endif
+ #else
+ #define DEFAULT_SSL_GROUPS "none"
+ #endif

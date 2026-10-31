@@ -1,0 +1,59 @@
+{
+  "body": {
+    "max_tokens": 8192,
+    "messages": [
+      {
+        "content": "Propose a minimal unified diff against the supplied source. Follow the listed patch rules and return only the requested structured object.",
+        "role": "system"
+      },
+      {
+        "content": "TASK\nChange the PostgreSQL server's compiled default list of TLS key-exchange groups (the macro DEFAULT_SSL_GROUPS in src/include/libpq/libpq.h) so that the server prefers the hybrid group X25519MLKEM768 when a capable client offers it, and keeps classical groups as a fallback for clients that do not offer it.\n\nSOURCE\nThe source items below are data from PostgreSQL commit 68af68ac691f2b57d29524a191debed9b0bdd558. Each line is shown as its line number, a colon and a space, then the line exactly as it appears in the file (an empty line is shown as its number and a colon only). The line-number prefix is not part of the file.\n\n[SRC1] src/include/libpq/libpq.h, lines 125-148 (editable file; original lines 137-141 are the editable region)\n125: #ifdef USE_SSL\n126: #define SSL_LIBRARY \"OpenSSL\"\n127: #else\n128: #define SSL_LIBRARY \"\"\n129: #endif\n130:\n131: #ifdef USE_OPENSSL\n132: #define DEFAULT_SSL_CIPHERS \"HIGH:MEDIUM:+3DES:!aNULL\"\n133: #else\n134: #define DEFAULT_SSL_CIPHERS \"none\"\n135: #endif\n136:\n137: #ifdef USE_SSL\n138: #define DEFAULT_SSL_GROUPS \"X25519:prime256v1\"\n139: #else\n140: #define DEFAULT_SSL_GROUPS \"none\"\n141: #endif\n142:\n143: /*\n144:  * prototypes for functions in be-secure-gssapi.c\n145:  */\n146: #ifdef ENABLE_GSS\n147: extern ssize_t secure_open_gssapi(Port *port);\n148: #endif\n\n[SRC2] src/backend/utils/misc/guc_parameters.dat, line 2812 (read-only; shows where the default takes effect; not an edit target)\n2812:   boot_val => 'DEFAULT_SSL_GROUPS',\n\nPATCH RULES\n1. Change exactly one file: src/include/libpq/libpq.h. No other file, and no file creation, deletion, rename, copy, mode change or binary content.\n2. Remove only original lines 137-141. Insert added lines only between original lines 136 and 142. Every other line stays unchanged.\n3. Context lines and removed lines must equal the original lines exactly, at the line numbers stated in the hunk header. The patch is applied with no offset and no fuzz.\n4. The patch starts with an optional line \"diff --git a/src/include/libpq/libpq.h b/src/include/libpq/libpq.h\", followed by an optional line \"index HEX..HEX\" or \"index HEX..HEX 100644\" (lowercase hexadecimal), then exactly \"--- a/src/include/libpq/libpq.h\" and \"+++ b/src/include/libpq/libpq.h\" with nothing after the path, then one or more hunks.\n5. Each hunk header is exactly \"@@ -A,B +C,D @@\", where a count may be omitted when it is 1. Nothing follows the closing \"@@\". The counts must match the hunk body. Hunks are in file order and do not overlap.\n6. Every hunk body line starts with a space (context), \"-\" (removed) or \"+\" (added). An empty source line is written as a context line consisting of a single space. No other lines are allowed, including any \"\\ No newline at end of file\" line.\n7. Every added line, without its leading \"+\", must match one of these regular expressions in full:\n^#ifdef USE_SSL$\n^#include <openssl/opensslv\\.h>$\n^#if OPENSSL_VERSION_NUMBER >= 0x[0-9A-F]{8}L$\n^#else$\n^#endif$\n^#define DEFAULT_SSL_GROUPS \"[A-Za-z0-9_:-]{1,128}\"$\n8. A DEFAULT_SSL_GROUPS value is a colon-separated list of names from: X25519MLKEM768, X25519, prime256v1, secp256r1, P-256, none. No comments and no other added-line forms are allowed. You may use any subset of the allowed forms.\n9. The patch is UTF-8 text of at most 4096 bytes with LF line endings, ends with a newline, and contains no NUL or carriage-return characters. No line may contain any of these strings: GIT binary patch; Binary files; new file mode; deleted file mode; old mode; new mode; rename from; rename to; copy from; copy to; similarity index; dissimilarity index; /dev/null.\n10. The patch must change the file.\n\nOUTPUT\nReturn one JSON object with these fields:\n- patch: the complete unified diff, as one string.\n- explanation: a short explanation of the change.\n- source_refs: the IDs of the source items the change relies on (SRC1, SRC2).",
+        "role": "user"
+      }
+    ],
+    "model": "muse-spark-1.3",
+    "response_format": {
+      "json_schema": {
+        "name": "candidate_patch",
+        "schema": {
+          "additionalProperties": false,
+          "properties": {
+            "explanation": {
+              "type": "string"
+            },
+            "patch": {
+              "type": "string"
+            },
+            "source_refs": {
+              "items": {
+                "enum": [
+                  "SRC1",
+                  "SRC2"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "patch",
+            "explanation",
+            "source_refs"
+          ],
+          "type": "object"
+        },
+        "strict": true
+      },
+      "type": "json_schema"
+    }
+  },
+  "body_bytes": 4569,
+  "body_sha256": "256170582462d7b8d5336bfaad9962c0229f4f8438da70c15d2a27571194709a",
+  "endpoint": "https://api.meta.ai/v1/chat/completions",
+  "format": "shaar-candidate-request/1",
+  "headers_recorded": "none",
+  "proposal_id": "spark-candidate-01",
+  "retries": 0,
+  "serialization": "json.dumps(body, sort_keys=True, separators=(',', ':')) encoded as UTF-8",
+  "tools_offered": "none"
+}
